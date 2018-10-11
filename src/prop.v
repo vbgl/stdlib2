@@ -20,7 +20,7 @@ Reserved Notation "~ x" (at level 75, right associativity).
 
 (** [True] is the always true proposition *)
 
-Inductive True : Prop :=
+Variant True : Prop :=
   I : True.
 
 (** [False] is the always false proposition *)
@@ -31,6 +31,14 @@ Inductive False : Prop :=.
 Definition not (A : Prop) := A -> False.
 
 Notation "~ x" := (not x) : type_scope.
+
+(** Create the “core” hint database, and set its transparent state for
+  variables and constants explicitely. *)
+Create HintDb core.
+Hint Variables Opaque : core.
+Hint Constants Opaque : core.
+
+Hint Unfold not: core.
 
 (* The basic closing tactic "done".                                           *)
 Ltac done :=
@@ -60,7 +68,7 @@ Reserved Notation "x /\ y" (at level 80, right associativity).
 Notation "A /\ B" := (and A B) : type_scope.
 
 Record iff (A B : Prop) : Prop :=
-  iff_intro { iff_proj1 : A; iff_proj2 : B }.
+  iff_intro { iff_proj1 : A -> B; iff_proj2 : B -> A }.
 Notation "A <-> B" := (iff A B) : type_scope.
 
 (* View lemmas that don't use reflection.                                     *)
