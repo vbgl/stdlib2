@@ -12,19 +12,23 @@ Require Import prelude ssreflect prop equality.
 
 (** [unit] is a singleton datatype with sole inhabitant [tt] *)
 
-Inductive unit : Set :=
+Variant unit : Set :=
   tt : unit.
 
 Lemma unitE : all_equal_to tt. Proof. by case. Qed.
 
 (** [option A] is the extension of [A] with an extra element [None] *)
 
-Inductive option (A : Type) : Type :=
+Variant option (A : Type) : Type :=
   | Some : A -> option A
   | None : option A.
 
 Arguments Some {A} _.
 Arguments None {A}.
+
+Register option as core.option.type.
+Register Some as core.option.Some.
+Register None as core.option.None.
 
 Module Option.
 
@@ -44,6 +48,13 @@ Notation obind := Option.bind.
 Notation omap := Option.map.
 Notation some := (@Some _) (only parsing).
 
+(** Inversion principles *)
+Definition optionI A (oa oa': option A) (e: oa = oa') :
+  if oa is Some a then if oa' is Some a' then a = a' else False else if oa' is Some _ then False else True
+  :=
+    let: eq_refl := e in
+    if oa is Some a then eq_refl else I.
+
 (** [prod A B], written [A * B], is the product of [A] and [B];
     the pair [pair A B a b] of [a] and [b] is abbreviated [(a,b)] *)
 
@@ -52,6 +63,7 @@ Record prod (A B : Type) : Type :=
 
 Arguments pair {A B} _ _.
 
+Declare Scope pair_scope.
 Delimit Scope pair_scope with PAIR.
 Open Scope pair_scope.
 
@@ -71,37 +83,30 @@ Coercion pair_of_and P Q (PandQ : P /\ Q) := (and_proj1 PandQ, and_proj2 PandQ).
 Definition all_pair I T U (w : forall i : I, T i * U i) :=
   (fun i => (w i).1, fun i => (w i).2).
 
-(* FIXME do we need sig and sigT in Coq today? *)
-(* FIXME naming of constructors *)
+Definition prod_rect (A B: Type) (T: prod A B -> Type) (h: forall (a: A) (b: B), T (a, b)) p : T p :=
+  let: (a, b) := p in h a b.
+
+Register prod as core.prod.type.
+Register pair as core.prod.intro.
+Register prod_rect as core.prod.rect.
+
+Register fst as core.prod.proj1.
+Register snd as core.prod.proj2.
 
 (** [(sig A P)], or more suggestively [{x:A | P x}], denotes the subset
     of elements of the type [A] which satisfy the predicate [P].
     Similarly [(sig2 A P Q)], or [{x:A | P x & Q x}], denotes the subset
     of elements of the type [A] which satisfy both [P] and [Q]. *)
 
-Record sig (A : Type) (P : A -> Prop) : Type :=
+Record sig (A : Type) (P : A -> Type) : Type :=
   exist { sig_proj1 : A;  sig_proj2 : P sig_proj1 }.
 
 Arguments exist {A} _.
 
-Record sig2 (A : Type) (P Q : A -> Prop) : Type :=
+Record sig2 (A : Type) (P Q : A -> Type) : Type :=
   exist2 { sig2_proj1 : A; sig2_proj2 : P sig2_proj1; sig2_proj3 : Q sig2_proj1 }.
 
 Arguments exist2 {A} _ _.
-
-(** [(sigT A P)], or more suggestively [{x:A & (P x)}] is a Sigma-type.
-    Similarly for [(sigT2 A P Q)], also written [{x:A & (P x) & (Q x)}]. *)
-
-Record sigT (A : Type) (P : A -> Type) : Type :=
-  existT { sigT_proj1 : A; sigT_proj2 : P sigT_proj1 }.
-
-Arguments existT {A} _.
-
-(* FIXME do we really need that? *)
-Record sigT2 (A : Type) (P Q : A -> Type) : Type :=
-  existT2 { sigT2_proj1 : A; sigT2_proj2 : P sigT2_proj1; sigT2_proj3 : Q sigT2_proj1 }.
-
-Arguments existT2 {A} _ _.
 
 Reserved Notation "{ x  |  P }" (at level 0, x at level 99).
 Reserved Notation "{ x  |  P  & Q }" (at level 0, x at level 99).
@@ -109,16 +114,8 @@ Reserved Notation "{ x  |  P  & Q }" (at level 0, x at level 99).
 Reserved Notation "{ x : A  |  P }" (at level 0, x at level 99).
 Reserved Notation "{ x : A  |  P  & Q }" (at level 0, x at level 99).
 
-Reserved Notation "{ x  &  P }" (at level 0, x at level 99).
-Reserved Notation "{ x : A  & P }" (at level 0, x at level 99).
-Reserved Notation "{ x : A  & P  & Q }" (at level 0, x at level 99).
-
 Notation "{ x  |  P }" := (sig (fun x => P)) : type_scope.
 Notation "{ x  |  P  & Q }" := (sig2 (fun x => P) (fun x => Q)) : type_scope.
 Notation "{ x : A  |  P }" := (sig (A:=A) (fun x => P)) : type_scope.
 Notation "{ x : A  |  P  & Q }" := (sig2 (A:=A) (fun x => P) (fun x => Q)) :
-  type_scope.
-Notation "{ x  &  P }" := (sigT (fun x => P)) : type_scope.
-Notation "{ x : A  & P }" := (sigT (A:=A) (fun x => P)) : type_scope.
-Notation "{ x : A  & P  & Q }" := (sigT2 (A:=A) (fun x => P) (fun x => Q)) :
   type_scope.
