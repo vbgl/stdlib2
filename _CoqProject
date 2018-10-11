@@ -1,0 +1,12 @@
+-arg -noinit
+-R . Stdlib
+src/prelude.v
+src/prop.v
+src/bool.v
+src/datatypes.v
+src/equality.v
+src/fun.v
+src/ssreflect.v
+src/abstract.v
+src/congr.v
+src/nat.v
