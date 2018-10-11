@@ -20,6 +20,10 @@ Definition abstract (statement : Type) (id : nat) (lock : abstract_lock) :=
 Notation "<hidden n >" := (abstract _ n _).
 Notation "T (* n *)" := (abstract T n abstract_key).
 
+Register abstract_lock as plugins.ssreflect.abstract_lock.
+Register abstract_key as plugins.ssreflect.abstract_key.
+Register abstract as plugins.ssreflect.abstract.
+
 (* To focus non-ssreflect tactics on a subterm, eg vm_compute. *)
 (* Usage:                                                      *)
 (*   elim/abstract_context: (pattern) => G defG.               *)
