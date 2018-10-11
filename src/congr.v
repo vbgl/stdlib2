@@ -23,3 +23,6 @@ Qed.
 Lemma ssr_congr_arrow Plemma Pgoal : Plemma = Pgoal -> Plemma -> Pgoal.
 Proof. by move->. Qed.
 Arguments ssr_congr_arrow : clear implicits.
+
+Register nary_congruence as plugins.ssreflect.nary_congruence.
+Register ssr_congr_arrow as plugins.ssreflect.ssr_congr_arrow.
