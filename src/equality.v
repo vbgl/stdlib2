@@ -51,24 +51,32 @@ Arguments eq_ind [A] x P _ y _.
 Arguments eq_rec [A] x P _ y _.
 Arguments eq_rect [A] x P _ y _.
 
+Definition eq_rect_dep A (x: A) (P: forall y, x = y -> Type) (ih: P x (eq_refl x)) y (e: x = y) : P y e :=
+  let: eq_refl := e in ih.
+
 Section equality.
 
 Context {A B : Type} (f : A -> B) {x y z : A}.
 
-Lemma eq_sym : x = y -> y = x.
-Proof. by case: _ /. Qed.
+Definition eq_sym : x = y -> y = x :=
+  fun e => let: eq_refl := e in eq_refl.
 
-Lemma eq_trans : x = y -> y = z -> x = z.
-Proof. by case: _ /. Qed.
+Definition eq_trans : x = y -> y = z -> x = z :=
+  fun e => let: eq_refl := e in fun f => f.
 
-Lemma eq_congr : x = y -> f x = f y.
-Proof. by case: _ /. Qed.
+Definition eq_congr1 : x = y -> f x = f y :=
+  fun e => let: eq_refl := e in eq_refl.
 
 End equality.
 
 Register eq_sym as core.eq.sym.
 Register eq_trans as core.eq.trans.
-Register eq_congr as core.eq.congr.
+Register eq_congr1 as core.eq.congr.
+
+Definition eq_rect_r A (x: A) (P: A -> Type) (ih: P x) y (e: y = x) : P y :=
+  eq_rect x P ih y (eq_sym e).
+
+Definition eq_ind_r := eq_rect_r.
 
 Lemma neq_sym A (x y : A) : x <> y -> y <> x.
 Proof. by move=> neq_xy /eq_sym. Qed.
