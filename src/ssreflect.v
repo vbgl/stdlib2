@@ -12,9 +12,6 @@
 
 Require Import prelude.
 
-From Coq Require ssrmatching.
-(* Do not import otherwise we also get the legacy prelude in scope *)
-
 (******************************************************************************)
 (* This file is the Gallina part of the ssreflect plugin implementation.      *)
 (* Files that use the ssreflect plugin should always Require ssreflect and    *)
@@ -56,11 +53,6 @@ From Coq Require ssrmatching.
 (* ssreflect manual, and in specific comments below.                          *)
 (******************************************************************************)
 
-
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-
 Module SsrSyntax.
 
 (* Declare Ssr keywords: 'is' 'of' '//' '/=' and '//='. We also declare the   *)
@@ -91,6 +83,7 @@ Export SsrSyntax.
 (* Non-ssreflect libraries that do not respect the form syntax (e.g., the Coq *)
 (* Lists library) should be loaded before ssreflect so that their notations   *)
 (* do not mask all ssreflect forms.                                           *)
+Declare Scope form_scope.
 Delimit Scope form_scope with FORM.
 Open Scope form_scope.
 
@@ -113,7 +106,7 @@ Notation "P : 'Prop'" := (P%type : Prop)
   (at level 100, only parsing) : core_scope.
 
 (* Constants for tactic-views *)
-Inductive external_view : Type := tactic_view of Type.
+Variant external_view : Type := tactic_view of Type.
 
 (* Syntax for referring to canonical structures:                              *)
 (*      [the struct_type of proj_val by proj_fun]                             *)
@@ -140,7 +133,7 @@ Inductive external_view : Type := tactic_view of Type.
 
 Module TheCanonical.
 
-CoInductive put vT sT (v1 v2 : vT) (s : sT) := Put.
+Variant put vT sT (v1 v2 : vT) (s : sT) := Put.
 
 Definition get vT sT v s (p : @put vT sT v v s) := let: Put _ _ _ := p in s.
 
@@ -159,19 +152,13 @@ Notation "[ 'the' sT 'of' v 'by' f ]" :=
 Notation "[ 'the' sT 'of' v ]" := (get ((fun s : sT => Put v (*coerce*)s s) _))
   (at level 0, only parsing) : form_scope.
 
-(* The following are "format only" versions of the above notations. Since Coq *)
-(* doesn't provide this facility, we fake it by splitting the "the" keyword.  *)
-(* We need to do this to prevent the formatter from being be thrown off by    *)
-(* application collapsing, coercion insertion and beta reduction in the right *)
-(* hand side of the notations above.                                          *)
+(* The following are "format only" versions of the above notations. *)
 
-(* FIXME use printing only notations *)
+Notation "[ 'the' sT 'of' v 'by' f ]" := (@get_by _ sT f v _ _)
+  (at level 0,  format "[ 'the'  sT  'of'  v  'by'  f ]", only printing) : form_scope.
 
-Notation "[ 'th' 'e' sT 'of' v 'by' f ]" := (@get_by _ sT f v _ _)
-  (at level 0,  format "[ 'th' 'e'  sT  'of'  v  'by'  f ]") : form_scope.
-
-Notation "[ 'th' 'e' sT 'of' v ]" := (@get _ sT v _ _)
-  (at level 0, format "[ 'th' 'e'  sT  'of'  v ]") : form_scope.
+Notation "[ 'the' sT 'of' v ]" := (@get _ sT v _ _)
+  (at level 0, format "[ 'the'  sT  'of'  v ]", only printing) : form_scope.
 
 (* We would like to recognize
 Notation "[ 'th' 'e' sT 'of' v : 'Type' ]" := (@get Type sT v _ _)
@@ -233,17 +220,19 @@ Notation "{ 'type' 'of' c 'for' s }" := (dependentReturnType c s)
 (*   We also define a simpler version ("phant" / "Phant") of phantom for the  *)
 (* common case where p_type is Type.                                          *)
 
-CoInductive phantom T (p : T) := Phantom.
+Variant phantom T (p : T) := Phantom.
 Arguments phantom : clear implicits.
 Arguments Phantom : clear implicits.
-CoInductive phant (p : Type) := Phant.
+Variant phant (p : Type) := Phant.
 
 (* Internal tagging used by the implementation of the ssreflect elim.         *)
 
 Definition protect_term (A : Type) (x : A) : A := x.
 
+Register protect_term as plugins.ssreflect.protect_term.
+
 (* The ssreflect idiom for a non-keyed pattern:                               *)
-(*  - unkeyed t wiil match any subterm that unifies with t, regardless of     *)
+(*  - unkeyed t will match any subterm that unifies with t, regardless of     *)
 (*    whether it displays the same head symbol as t.                          *)
 (*  - unkeyed t a b will match any application of a term f unifying with t,   *)
 (*    to two arguments unifying with with a and b, repectively, regardless of *)
@@ -305,8 +294,14 @@ Definition ssr_have_let Pgoal Plemma step
   (rest : let x : Plemma := step in Pgoal) : Pgoal := rest.
 Arguments ssr_have_let [Pgoal].
 
+Register ssr_have as plugins.ssreflect.ssr_have.
+Register ssr_have_let as plugins.ssreflect.ssr_have_let.
+
 Definition ssr_suff Plemma Pgoal step (rest : Plemma) : Pgoal := step rest.
 Arguments ssr_suff Plemma [Pgoal].
 
 Definition ssr_wlog := ssr_suff.
 Arguments ssr_wlog Plemma [Pgoal].
+
+Register ssr_suff as plugins.ssreflect.ssr_suff.
+Register ssr_wlog as plugins.ssreflect.ssr_wlog.
