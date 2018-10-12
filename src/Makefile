@@ -6,7 +6,7 @@ dep:
 	coqdep *.v > dep
 
 %.vo: %.v
-	coqc -nois $*
+	coqtop -noinit -R . Stdlib -compile $<
 
 clean:
 	$(RM) dep *.vo *.glob
