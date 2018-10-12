@@ -1,0 +1,15 @@
+-arg -noinit
+-R . Stdlib
+
+abstract.v
+bool.v
+congr.v
+datatypes.v
+equality.v
+fun.v
+lock.v
+nat.v
+prelude.v
+prop.v
+ssreflect.v
+ssrmatching.v
