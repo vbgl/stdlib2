@@ -15,14 +15,20 @@ Global Unset Printing Implicit Defensive.
 Global Set Primitive Projections.
 
 (** Plugins loaded initially *)
-From Coq Require Import ssrmatching.
 Declare ML Module "ltac_plugin".
+Declare ML Module "ssrmatching_plugin".
 Declare ML Module "ssreflect_plugin".
+
+(** Enable proof mode. *)
+Global Set Default Proof Mode "Classic".
 
 (** Scopes *)
 
+Declare Scope type_scope.
 Delimit Scope type_scope with type.
+Declare Scope function_scope.
 Delimit Scope function_scope with function.
+Declare Scope core_scope.
 Delimit Scope core_scope with core.
 
 Bind Scope type_scope with Sortclass.
