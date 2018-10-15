@@ -212,6 +212,7 @@ Require Import prelude ssreflect prop datatypes equality congr.
 (* the directions will be reversed!.                                          *)
 (******************************************************************************)
 
+Declare Scope fun_scope.
 Delimit Scope fun_scope with FUN.
 Open Scope fun_scope.
 
@@ -223,13 +224,9 @@ Notation "@^~ x" := (fun f => f x)
 
 (* Shorthand for some basic equality lemmas. *)
 
-Notation erefl := eq_refl.
-Notation ecast i T e x := (let: erefl in _ = i := e return T in x).
+Notation ecast i T e x := (let: eq_refl in _ = i := e return T in x).
 (*
-Definition esym := eq_sym.
 Definition nesym := sym_not_eq.
-Definition etrans := trans_eq.
-Definition congr1 := f_equal.
 Definition congr2 := f_equal2.
  *)
 
@@ -240,16 +237,17 @@ Canonical wrap T x := @Wrap T x.
 
 Prenex Implicits unwrap wrap Wrap.
 
-(* Syntax for defining auxiliary recursive function.          *)
-(*  Usage:                                                    *)
-(* Section FooDefinition.                                     *)
-(* Variables (g1 : T1) (g2 : T2).  (globals)                  *)
-(* Fixoint foo_auxiliary (a3 : T3) ... :=                     *)
-(*        body, using [rec e3, ...] for recursive calls       *)
-(* where "[ 'rec' a3 , a4 , ... ]" := foo_auxiliary.          *)
-(* Definition foo x y .. := [rec e1, ...].                    *)
-(* + proofs about foo                                         *)
-(* End FooDefinition.                                         *)
+(* Syntax for defining auxiliary recursive function.
+ Usage:
+Section FooDefinition.
+Variables (g1 : T1) (g2 : T2).  (globals)
+Fixoint foo_auxiliary (a3 : T3) ... :=
+       body, using [rec e3, ...] for recursive calls
+where "[ 'rec' a3 , a4 , ... ]" := foo_auxiliary.
+Definition foo x y .. := [rec e1, ...].
++ proofs about foo
+End FooDefinition.
+*)
 
 Reserved Notation "[ 'rec' a0 ]"
   (at level 0, format "[ 'rec'  a0 ]").
@@ -282,7 +280,7 @@ Section SimplFun.
 
 Variables aT rT : Type.
 
-CoInductive simpl_fun := SimplFun of aT -> rT.
+Variant simpl_fun := SimplFun of aT -> rT.
 
 Definition fun_of_simpl f := fun x => let: SimplFun lam := f in lam x.
 
@@ -333,7 +331,7 @@ Definition eqfun (f g : B -> A) : Prop := forall x, f x = g x.
 Definition eqrel (r s : C -> B -> A) : Prop := forall x y, r x y = s x y.
 
 Lemma frefl f : eqfun f f. Proof. by []. Qed.
-Lemma fsym f g : eqfun f g -> eqfun g f. Proof. move=> eq_fg x. done. Qed.
+Lemma fsym f g : eqfun f g -> eqfun g f. Proof. by move=> eq_fg x. Qed.
 
 Lemma ftrans f g h : eqfun f g -> eqfun g h -> eqfun f h.
 Proof. by move=> eq_fg eq_gh x; rewrite eq_fg. Qed.
@@ -375,6 +373,7 @@ Notation comp := (funcomp tt).
 Notation "@ 'comp'" := (fun A B C => @funcomp A B C tt).
 Notation "f1 \o f2" := (comp f1 f2)
   (at level 50, format "f1  \o '/ '  f2") : fun_scope.
+Infix "∘" := comp (at level 50) : fun_scope.
 Notation "f1 \; f2" := (catcomp tt f1 f2)
   (at level 60, right associativity, format "f1  \; '/ '  f2") : fun_scope.
 
@@ -401,14 +400,14 @@ Section Tag.
 
 Variables (I : Type) (i : I) (T_ U_ : I -> Type).
 
-Definition tag := sigT_proj1.
-Definition tagged : forall w, T_(tag w) := @sigT_proj2 I [eta T_].
-Definition Tagged x := @existT I [eta T_] i x.
+Definition tag := sig_proj1.
+Definition tagged : forall w, T_(tag w) := @sig_proj2 I [eta T_].
+Definition Tagged x := @exist I [eta T_] i x.
 
-Definition tag2 (w : @sigT2 I T_ U_) := sigT2_proj1 w.
-Definition tagged2 w : T_(tag2 w) := sigT2_proj2 w.
-Definition tagged2' w : U_(tag2 w) := sigT2_proj3 w.
-Definition Tagged2 x y := @existT2 I [eta T_] [eta U_] i x y.
+Definition tag2 (w : @sig2 I T_ U_) := sig2_proj1 w.
+Definition tagged2 w : T_(tag2 w) := sig2_proj2 w.
+Definition tagged2' w : U_(tag2 w) := sig2_proj3 w.
+Definition Tagged2 x y := @exist2 I [eta T_] [eta U_] i x y.
 
 End Tag.
 
@@ -416,17 +415,17 @@ Arguments Tagged [I i].
 Arguments Tagged2 [I i].
 Prenex Implicits tag tagged Tagged tag2 tagged2 tagged2' Tagged2.
 
-Coercion tag_of_tag2 I T_ U_ (w : @sigT2 I T_ U_) :=
+Coercion tag_of_tag2 I T_ U_ (w : @sig2 I T_ U_) :=
   Tagged (fun i => T_ i * U_ i)%type (tagged2 w, tagged2' w).
 
 Lemma all_tag I T U :
-   (forall x : I, {y : T x & U x y}) ->
-  {f : forall x, T x & forall x, U x (f x)}.
+   (forall x : I, {y : T x | U x y}) ->
+  {f : forall x, T x | forall x, U x (f x)}.
 Proof. by move=> fP; exists (fun x => tag (fP x)) => x; case: (fP x). Qed.
 
 Lemma all_tag2 I T U V :
-    (forall i : I, {y : T i & U i y & V i y}) ->
-  {f : forall i, T i & forall i, U i (f i) & forall i, V i (f i)}.
+    (forall i : I, {y : T i | U i y & V i y}) ->
+  {f : forall i, T i | forall i, U i (f i) & forall i, V i (f i)}.
 Proof. by case/all_tag=> f /all_pair[]; exists f. Qed.
 
 (* Refinement types. *)
@@ -451,9 +450,9 @@ End Sig.
 
 Prenex Implicits svalP s2val s2valP s2valP'.
 
-Coercion tag_of_sig I P (u : @sig I P) := Tagged P (svalP u).
+Coercion tag_of_sig I (P: I -> Prop) (u : @sig I P) := Tagged P (svalP u).
 
-Coercion sig_of_sig2 I P Q (u : @sig2 I P Q) :=
+Coercion sig_of_sig2 I (P Q: I -> Prop) (u : @sig2 I P Q) :=
   exist (fun i => P i /\ Q i) (s2val u) (and_intro (s2valP u) (s2valP' u)).
 
 Lemma all_sig I T P :
@@ -580,7 +579,7 @@ Lemma can_pcan g : cancel g -> pcancel (fun y => Some (g y)).
 Proof. by move=> fK x; congr (Some _). Qed.
 
 Lemma pcan_inj g : pcancel g -> injective.
-Proof. by move=> fK x y /(congr1 g); rewrite !fK => [[]]. Qed.
+Proof. by move => fK x y /(eq_congr1 g) /optionI; rewrite !fK. Qed.
 
 Lemma can_inj g : cancel g -> injective.
 Proof. by move/can_pcan; apply: pcan_inj. Qed.
@@ -593,16 +592,16 @@ Proof. by move=> fK <-. Qed.
 
 End Injections.
 
-Lemma Some_inj {T} : injective (@Some T). Proof. by move=> x y []. Qed.
+Lemma Some_inj {T} : injective (@Some T). Proof. by move => x y /optionI. Qed.
 
 (* Force implicits to use as a view. *)
 Prenex Implicits Some_inj.
 
 (* cancellation lemmas for dependent type casts.                             *)
-Lemma esymK T x y : cancel (@esym T x y) (@esym T y x).
+Lemma eq_symK T x y : cancel (@eq_sym T x y) (@eq_sym T y x).
 Proof. by case: y /. Qed.
 
-Lemma etrans_id T x y (eqxy : x = y :> T) : etrans (erefl x) eqxy = eqxy.
+Lemma eq_trans_id T x y (eqxy : x = y :> T) : eq_trans (eq_refl x) eqxy = eqxy.
 Proof. by case: y / eqxy. Qed.
 
 Section InjectionsTheory.
@@ -640,7 +639,7 @@ Section Bijections.
 
 Variables (A B : Type) (f : B -> A).
 
-CoInductive bijective : Prop := Bijective g of cancel f g & cancel g f.
+Variant bijective : Prop := Bijective g of cancel f g & cancel g f.
 
 Hypothesis bijf : bijective.
 
