@@ -16,21 +16,31 @@ Require Import prelude ssreflect.
 
 Reserved Notation "x <-> y" (at level 95, no associativity).
 Reserved Notation "x \/ y" (at level 85, right associativity).
+Reserved Notation "x ∨ y" (at level 85, right associativity).
 Reserved Notation "~ x" (at level 75, right associativity).
+Reserved Notation "¬ x" (at level 75, right associativity).
 
 (** [True] is the always true proposition *)
 
 Variant True : Prop :=
   I : True.
 
+Register True as core.True.type.
+Register I as core.True.I.
+
 (** [False] is the always false proposition *)
 
 Inductive False : Prop :=.
+
+Register False as core.False.type.
 
 (** [not A], written [~A], is the negation of [A] *)
 Definition not (A : Prop) := A -> False.
 
 Notation "~ x" := (not x) : type_scope.
+Notation "¬ x" := (not x) : type_scope.
+
+Register not as core.not.type.
 
 (** Create the “core” hint database, and set its transparent state for
   variables and constants explicitely. *)
@@ -65,7 +75,9 @@ Record and (A B : Prop) : Prop :=
   and_intro { and_proj1 : A; and_proj2 : B }.
 
 Reserved Notation "x /\ y" (at level 80, right associativity).
+Reserved Notation "x ∧ y" (at level 80, right associativity).
 Notation "A /\ B" := (and A B) : type_scope.
+Infix "∧" := and : type_scope.
 
 Record iff (A B : Prop) : Prop :=
   iff_intro { iff_proj1 : A -> B; iff_proj2 : B -> A }.
