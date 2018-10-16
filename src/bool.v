@@ -10,7 +10,54 @@
 
 (* This file is (C) Copyright 2006-2015 Microsoft Corporation and Inria. *)
 
-Require Import ssreflect fun.
+Require Import functions.
+Import prelude ssreflect prop equality datatypes.
+
+(********************************************************************)
+(** * The boolean datatype *)
+
+(** [bool] is the datatype of the boolean values [true] and [false] *)
+
+Variant bool :=
+| true : bool
+| false : bool.
+
+Add Printing If bool.
+
+Declare Scope bool_scope.
+Delimit Scope bool_scope with bool.
+Bind Scope bool_scope with bool.
+
+Register bool as core.bool.type.
+Register true as core.bool.true.
+Register false as core.bool.false.
+
+
+(** Basic boolean operators *)
+
+Definition andb (b1 b2:bool) : bool := if b1 then b2 else false.
+
+Definition orb (b1 b2:bool) : bool := if b1 then true else b2.
+
+Definition implb (b1 b2:bool) : bool := if b1 then b2 else true.
+
+Definition xorb (b1 b2:bool) : bool :=
+  match b1, b2 with
+    | true, true => false
+    | true, false => true
+    | false, true => true
+    | false, false => false
+  end.
+
+Definition negb (b:bool) := if b then false else true.
+
+Infix "||" := orb (at level 50, left associativity) : bool_scope.
+Infix "&&" := andb (at level 40, left associativity) : bool_scope.
+
+Register andb as core.bool.andb.
+Register orb as core.bool.orb.
+Register xorb as core.bool.xorb.
+Register negb as core.bool.negb.
 
 (******************************************************************************)
 (* A theory of boolean predicates and operators. A large part of this file is *)
@@ -60,7 +107,7 @@ Require Import ssreflect fun.
 (*           classically P <-> we can assume P when proving is_true b.        *)
 (*                         := forall b : bool, (P -> b) -> b.                 *)
 (*                            This is equivalent to ~ (~ P) when P : Prop.    *)
-(*             implies P Q == wrapper coinductive type that coerces to P -> Q *)
+(*             implies P Q == wrapper type that coerces to P -> Q *)
 (*                            and can be used as a P -> Q view unambigously.  *)
 (*                            Useful to avoid spurious insertion of <-> views *)
 (*                            when Q is a conjunction of foralls, as in Lemma *)
@@ -268,11 +315,9 @@ Require Import ssreflect fun.
 (*   W -- weakening, as in in1W : {in D, forall x, P} -> forall x, P.         *)
 (******************************************************************************)
 
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
 Set Warnings "-projection-no-head-constant".
 
+Declare Scope bool_scope.
 Delimit Scope bool_scope with bool.
 
 (* Make the general "if" into a notation, so that we can override it below.   *)
@@ -280,6 +325,7 @@ Delimit Scope bool_scope with bool.
 (* recognize the expansion of the boolean if; using the default printer       *)
 (* avoids a spurrious trailing %GEN_IF.                                       *)
 
+Declare Scope general_if_scope.
 Delimit Scope general_if_scope with GEN_IF.
 
 Notation "'if' c 'then' v1 'else' v2" :=
@@ -297,6 +343,7 @@ Notation "'if' c 'as' x 'return' t 'then' v1 'else' v2" :=
 
 (* Force boolean interpretation of simple if expressions.                     *)
 
+Declare Scope boolean_if_scope.
 Delimit Scope boolean_if_scope with BOOL_IF.
 
 Notation "'if' c 'return' t 'then' v1 'else' v2" :=
@@ -310,9 +357,20 @@ Notation "'if' c 'as' x 'return' t 'then' v1 'else' v2" :=
 
 Open Scope boolean_if_scope.
 
-Notation reflect := Bool.reflect.
-Notation ReflectT := Bool.ReflectT.
-Notation ReflectF := Bool.ReflectF.
+(*****************************************)
+(** * Reflect: a specialized inductive type for
+    relating propositions and booleans,
+    as popularized by the Ssreflect library. *)
+(*****************************************)
+
+Variant reflect (P : Prop) : bool -> Type :=
+  | ReflectT : P -> reflect P true
+  | ReflectF : ~ P -> reflect P false.
+Hint Constructors reflect : bool.
+
+(** Interest: a case on a reflect lemma or hyp performs clever
+    unification, and leave the goal in a convenient shape
+    (a bit like case_eq). *)
 
 Reserved Notation "~~ b" (at level 35, right associativity).
 Reserved Notation "b ==> c" (at level 55, right associativity).
@@ -392,7 +450,8 @@ Notation "~~ b" := (negb b) : bool_scope.
 Notation "b ==> c" := (implb b c) : bool_scope.
 Notation "b1 (+) b2" := (addb b1 b2) : bool_scope.
 
-(* Constant is_true b := b = true is defined in Init.Datatypes. *)
+(** Interpretation of booleans as propositions *)
+Definition is_true b := b = true.
 Coercion is_true : bool >-> Sortclass. (* Prop *)
 
 Lemma prop_congr : forall b b' : bool, b = b' -> b = b' :> Prop.
@@ -401,8 +460,12 @@ Proof. by move=> b b' ->. Qed.
 Ltac prop_congr := apply: prop_congr.
 
 (* Lemmas for trivial. *)
-Lemma is_true_true : true.               Proof. by []. Qed.
-Lemma not_false_is_true : ~ false.       Proof. by []. Qed.
+Lemma is_true_true : true.
+Proof. by []. Qed.
+
+Lemma not_false_is_true : ~ false.
+Proof. by []. Qed.
+
 Lemma is_true_locked_true : locked true. Proof. by unlock. Qed.
 Hint Resolve is_true_true not_false_is_true is_true_locked_true.
 
@@ -492,7 +555,7 @@ Section BoolIf.
 
 Variables (A B : Type) (x : A) (f : A -> B) (b : bool) (vT vF : A).
 
-CoInductive if_spec (not_b : Prop) : bool -> A -> Set :=
+Variant if_spec (not_b : Prop) : bool -> A -> Set :=
   | IfSpecTrue  of      b : if_spec not_b true vT
   | IfSpecFalse of  not_b : if_spec not_b false vF.
 
@@ -621,7 +684,7 @@ Lemma rwP2 : reflect Q b -> (P <-> Q).
 Proof. by move=> Qb; split=> ?; [apply: appP | apply: elimT; case: Qb]. Qed.
 
 (*  Predicate family to reflect excluded middle in bool.                      *)
-CoInductive alt_spec : bool -> Type :=
+Variant alt_spec : bool -> Type :=
   | AltTrue of     P : alt_spec true
   | AltFalse of ~~ b : alt_spec false.
 
@@ -639,7 +702,7 @@ Hint View for apply// equivPif|3 xorPif|3 equivPifn|3 xorPifn|3.
 (* Allow the direct application of a reflection lemma to a boolean assertion. *)
 Coercion elimT : reflect >-> Funclass.
 
-CoInductive implies P Q := Implies of P -> Q.
+Variant implies P Q := Implies of P -> Q.
 Lemma impliesP P Q : implies P Q -> P -> Q. Proof. by case. Qed.
 Lemma impliesPn (P Q : Prop) : implies P Q -> ~ Q -> ~ P.
 Proof. by case=> iP ? /iP. Qed.
@@ -1155,7 +1218,7 @@ Proof. by move=> *; apply/orP; left. Qed.
 Lemma subrelUr r1 r2 : subrel r2 (relU r1 r2).
 Proof. by move=> *; apply/orP; right. Qed.
 
-CoInductive mem_pred := Mem of pred T.
+Variant mem_pred := Mem of pred T.
 
 Definition isMem pT topred mem := mem = (fun p : pT => Mem [eta topred p]).
 
@@ -1365,7 +1428,7 @@ End simpl_mem.
 
 (* Qualifiers and keyed predicates. *)
 
-CoInductive qualifier (q : nat) T := Qualifier of predPredType T.
+Variant qualifier (q : nat) T := Qualifier of predPredType T.
 
 Coercion has_quality n T (q : qualifier n T) : pred_class :=
   fun x => let: Qualifier _ p := q in p x.
@@ -1412,7 +1475,7 @@ Notation "[ 'qualify' 'an' x : T | P ]" := (Qualifier 2 (fun x : T => P%B))
 Section KeyPred.
 
 Variable T : Type.
-CoInductive pred_key (p : predPredType T) := DefaultPredKey.
+Variant pred_key (p : predPredType T) := DefaultPredKey.
 
 Variable p : predPredType T.
 Structure keyed_pred (k : pred_key p) :=
