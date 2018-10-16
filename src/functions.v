@@ -372,8 +372,8 @@ End Composition.
 Notation comp := (funcomp tt).
 Notation "@ 'comp'" := (fun A B C => @funcomp A B C tt).
 Notation "f1 \o f2" := (comp f1 f2)
-  (at level 50, format "f1  \o '/ '  f2") : fun_scope.
-Infix "∘" := comp (at level 50) : fun_scope.
+  (at level 50, left associativity, format "f1  \o '/ '  f2") : fun_scope.
+Infix "∘" := comp (at level 50, left associativity) : fun_scope.
 Notation "f1 \; f2" := (catcomp tt f1 f2)
   (at level 60, right associativity, format "f1  \; '/ '  f2") : fun_scope.
 
