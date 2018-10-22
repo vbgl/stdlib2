@@ -8,19 +8,49 @@
 (*         *     (see LICENSE file for the text of the license)         *)
 (************************************************************************)
 
-Require Import prelude prop bool datatypes equality.
+Require Import ssreflect prelude prop datatypes equality.
+
+(* Term tagging (user-level).                                                 *)
+(* The ssreflect library uses four strengths of term tagging to restrict      *)
+(* convertibility during type checking:                                       *)
+(*  nosimpl t simplifies to t EXCEPT in a definition; more precisely, given   *)
+(*    Definition foo := nosimpl bar, foo (or foo t') will NOT be expanded by  *)
+(*    the /= and //= switches unless it is in a forcing context (e.g., in     *)
+(*    match foo t' with ... end, foo t' will be reduced if this allows the    *)
+(*    match to be reduced). Note that nosimpl bar is simply notation for a    *)
+(*    a term that beta-iota reduces to bar; hence rewrite /foo will replace   *)
+(*    foo by bar, and rewrite -/foo will replace bar by foo.                  *)
+(*    CAVEAT: nosimpl should not be used inside a Section, because the end of *)
+(*    section "cooking" removes the iota redex.                               *)
+(*  locked t is provably equal to t, but is not convertible to t; 'locked'    *)
+(*    provides support for selective rewriting, via the lock t : t = locked t *)
+(*    Lemma, and the ssreflect unlock tactic.                                 *)
+(*  locked_with k t is equal but not convertible to t, much like locked t,    *)
+(*    but supports explicit tagging with a value k : unit. This is used to    *)
+(*    mitigate a flaw in the term comparison heuristic of the Coq kernel,     *)
+(*    which treats all terms of the form locked t as equal and conpares their *)
+(*    arguments recursively, leading to an exponential blowup of comparison.  *)
+(*    For this reason locked_with should be used rather than locked when      *)
+(*    defining ADT operations. The unlock tactic does not support locked_with *)
+(*    but the unlock rewrite rule does, via the unlockable interface.         *)
+(*  we also use Module Type ascription to create truly opaque constants,      *)
+(*    because simple expansion of constants to reveal an unreducible term     *)
+(*    doubles the time complexity of a negative comparison. Such opaque       *)
+(*    constants can be expanded generically with the unlock rewrite rule.     *)
+(*    See the definition of card and subset in fintype for examples of this.  *)
+
+Notation nosimpl t := (let: tt := tt in t).
 
 Lemma master_key : unit. Proof. exact tt. Qed.
 Definition locked A := let: tt := master_key in fun x : A => x.
 
+Register master_key as plugins.ssreflect.master_key.
+Register locked as plugins.ssreflect.locked.
+
 Lemma lock A x : x = locked x :> A. Proof. unlock; reflexivity. Qed.
 
-(* Needed for locked predicates, in particular for eqType's.                  *)
-Lemma not_locked_false_eq_true : locked false <> true.
-Proof. unlock; discriminate. Qed.
-
 (* To unlock opaque constants. *)
-Structure unlockable T v := Unlockable {unlocked : T; _ : unlocked = v}.
+Structure unlockable T v := Unlockable { unlocked : T; unlocked_prop : unlocked = v }.
 Lemma unlock T x C : @unlocked T x C = x. Proof. by case: C. Qed.
 
 Notation "[ 'unlockable' 'of' C ]" := (@Unlockable _ _ C (unlock _))
@@ -47,18 +77,3 @@ Canonical locked_with_unlockable T k x :=
 Lemma unlock_with T k x : unlocked (locked_with_unlockable k x) = x :> T.
 Proof. exact: unlock. Qed.
 
-(* The basic closing tactic "done".                                           *)
-Ltac done :=
-  trivial; hnf; intros; solve
-   [ do ![solve [trivial | apply: sym_equal; trivial]
-         | discriminate | contradiction | split]
-   | case not_locked_false_eq_true; assumption
-   | match goal with H : ~ _ |- _ => solve [case H; trivial] end ].
-
-(* Quicker done tactic not including split, syntax: /0/ *)
-Ltac ssrdone0 :=
-  trivial; hnf; intros; solve
-   [ do ![solve [trivial | apply: sym_equal; trivial]
-         | discriminate | contradiction ]
-   | case not_locked_false_eq_true; assumption
-   | match goal with H : ~ _ |- _ => solve [case H; trivial] end ].
