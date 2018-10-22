@@ -11,7 +11,8 @@
 (* This file is (C) Copyright 2006-2015 Microsoft Corporation and Inria. *)
 
 Require Import functions.
-Import prelude ssreflect prop equality datatypes.
+Require Import lock.
+Import prelude ssreflect prop equality datatypes nat.
 
 (********************************************************************)
 (** * The boolean datatype *)
@@ -469,6 +470,26 @@ Proof. by []. Qed.
 Lemma is_true_locked_true : locked true. Proof. by unlock. Qed.
 Hint Resolve is_true_true not_false_is_true is_true_locked_true.
 
+(* Needed for locked predicates, in particular for eqType's.                  *)
+Lemma not_locked_false_eq_true : locked false <> true.
+Proof. unlock; discriminate. Qed.
+
+(* The basic closing tactic "done".                                           *)
+Ltac done :=
+  trivial; hnf; intros; solve
+   [ do ![solve [trivial | apply: eq_sym; trivial]
+         | discriminate | contradiction | split]
+   | case not_locked_false_eq_true; assumption
+   | match goal with H : ~ _ |- _ => solve [case H; trivial] end ].
+
+(* Quicker done tactic not including split, syntax: /0/ *)
+Ltac ssrdone0 :=
+  trivial; hnf; intros; solve
+   [ do ![solve [trivial | apply: eq_sym; trivial]
+         | discriminate | contradiction ]
+   | case not_locked_false_eq_true; assumption
+   | match goal with H : ~ _ |- _ => solve [case H; trivial] end ].
+
 (* Shorter names. *)
 Definition isT := is_true_true.
 Definition notF := not_false_is_true.
@@ -530,15 +551,11 @@ Proof. by move/contraFN=> bF_notc /bF_notc/negbTE. Qed.
 
 Coercion isSome T (u : option T) := if u is Some _ then true else false.
 
-Coercion is_inl A B (u : A + B) := if u is inl _ then true else false.
+Coercion isLeft A B (u : A + B) := if u is Left _ then true else false.
 
-Coercion is_left A B (u : {A} + {B}) := if u is left _ then true else false.
+Prenex Implicits isSome isLeft.
 
-Coercion is_inleft A B (u : A + {B}) := if u is inleft _ then true else false.
-
-Prenex Implicits  isSome is_inl is_left is_inleft.
-
-Definition decidable P := {P} + {~ P}.
+Definition decidable (P: Prop) : Type := P + ¬ P.
 
 (* Lemmas for ifs with large conditions, which allow reasoning about the  *)
 (* condition without repeating it inside the proof (the latter IS         *)
@@ -756,7 +773,7 @@ Proof.
 by case=> // undecP; apply/undecP; right=> notP; apply/notF/undecP; left.
 Qed.
 
-Lemma classic_pick T P : classically ({x : T | P x} + (forall x, ~ P x)).
+Lemma classic_pick T (P: T -> Prop) : classically ({x : T | P x} + (forall x, ~ P x)).
 Proof.
 case=> // undecP; apply/undecP; right=> x Px.
 by apply/notF/undecP; left; exists x.
@@ -873,7 +890,11 @@ by case b1; case b2; case b3; case b4; case b5; constructor; try by case.
 Qed.
 
 Lemma orP : reflect (b1 \/ b2) (b1 || b2).
-Proof. by case b1; case b2; constructor; auto; case. Qed.
+Proof.
+  case b1; first by do 2 left.
+  case b2; first by left; right.
+  by right; case.
+Qed.
 
 Lemma or3P : reflect [\/ b1, b2 | b3] [|| b1, b2 | b3].
 Proof.
@@ -893,10 +914,18 @@ by constructor; case.
 Qed.
 
 Lemma nandP : reflect (~~ b1 \/ ~~ b2) (~~ (b1 && b2)).
-Proof. by case b1; case b2; constructor; auto; case; auto. Qed.
+Proof.
+  case: b1; last by do 2 left.
+  case: b2; last by left; right.
+  by right; case.
+Qed.
 
 Lemma norP : reflect (~~ b1 /\ ~~ b2) (~~ (b1 || b2)).
-Proof. by case b1; case b2; constructor; auto; case; auto. Qed.
+Proof.
+  case: b1; first by right; case.
+  case: b2; first by right; case.
+  by left.
+Qed.
 
 Lemma implyP : reflect (b1 -> b2) (b1 ==> b2).
 Proof. by case b1; case b2; constructor; auto. Qed.
@@ -1228,7 +1257,7 @@ Structure predType := PredType {
   _ : {mem | isMem topred mem}
 }.
 
-Definition mkPredType pT toP := PredType (exist (@isMem pT toP) _ (erefl _)).
+Definition mkPredType pT toP := PredType (exist (@isMem pT toP) _ eq_refl).
 
 Canonical predPredType := Eval hnf in @mkPredType (pred T) id.
 Canonical simplPredType := Eval hnf in mkPredType pred_of_simpl.
@@ -1363,7 +1392,7 @@ Structure manifest_applicative_pred p := ManifestApplicativePred {
   manifest_applicative_pred_value :> pred T;
   _ : manifest_applicative_pred_value = p
 }.
-Definition ApplicativePred p := ManifestApplicativePred (erefl p).
+Definition ApplicativePred p := ManifestApplicativePred (eq_refl p).
 Canonical applicative_pred_applicative sp :=
   ApplicativePred (applicative_pred_of_simpl sp).
 
@@ -1371,13 +1400,13 @@ Structure manifest_simpl_pred p := ManifestSimplPred {
   manifest_simpl_pred_value :> simpl_pred T;
   _ : manifest_simpl_pred_value = SimplPred p
 }.
-Canonical expose_simpl_pred p := ManifestSimplPred (erefl (SimplPred p)).
+Canonical expose_simpl_pred p := ManifestSimplPred (eq_refl (SimplPred p)).
 
 Structure manifest_mem_pred p := ManifestMemPred {
   manifest_mem_pred_value :> mem_pred T;
   _ : manifest_mem_pred_value= Mem [eta p]
 }.
-Canonical expose_mem_pred p :=  @ManifestMemPred p _ (erefl _).
+Canonical expose_mem_pred p :=  @ManifestMemPred p _ eq_refl.
 
 Structure applicative_mem_pred p :=
   ApplicativeMemPred {applicative_mem_pred_value :> manifest_mem_pred p}.
@@ -1435,6 +1464,8 @@ Coercion has_quality n T (q : qualifier n T) : pred_class :=
 Arguments has_quality n [T].
 
 Lemma qualifE n T p x : (x \in @Qualifier n T p) = p x. Proof. by []. Qed.
+
+Local Open Scope nat_scope.
 
 Notation "x \is A" := (x \in has_quality 0 A)
   (at level 70, no associativity,
@@ -1510,7 +1541,7 @@ Variables (T : Type) (n : nat) (q : qualifier n T).
 
 Structure keyed_qualifier (k : pred_key q) :=
   PackKeyedQualifier {unkey_qualifier; _ : unkey_qualifier = q}.
-Definition KeyedQualifier k := PackKeyedQualifier k (erefl q).
+Definition KeyedQualifier k := PackKeyedQualifier k (eq_refl q).
 Variables (k : pred_key q) (k_q : keyed_qualifier k).
 Fact keyed_qualifier_suproof : unkey_qualifier k_q =i q.
 Proof. by case: k_q => /= _ ->. Qed.
@@ -1536,16 +1567,16 @@ End DefaultKeying.
 (* Skolemizing with conditions. *)
 
 Lemma all_tag_cond_dep I T (C : pred I) U :
-    (forall x, T x) -> (forall x, C x -> {y : T x & U x y}) ->
-  {f : forall x, T x & forall x, C x -> U x (f x)}.
+    (forall x, T x) -> (forall x, C x -> {y : T x | U x y}) ->
+  {f : forall x, T x | forall x, C x -> U x (f x)}.
 Proof.
 move=> f0 fP; apply: all_tag (fun x y => C x -> U x y) _ => x.
 by case Cx: (C x); [case/fP: Cx => y; exists y | exists (f0 x)].
 Qed.
 
 Lemma all_tag_cond I T (C : pred I) U :
-    T -> (forall x, C x -> {y : T & U x y}) ->
-  {f : I -> T & forall x, C x -> U x (f x)}.
+    T -> (forall x, C x -> {y : T | U x y}) ->
+  {f : I -> T | forall x, C x -> U x (f x)}.
 Proof. by move=> y0; apply: all_tag_cond_dep. Qed.
 
 Lemma all_sig_cond_dep I T (C : pred I) P :
