@@ -119,3 +119,13 @@ Notation "{ x  |  P  & Q }" := (sig2 (fun x => P) (fun x => Q)) : type_scope.
 Notation "{ x : A  |  P }" := (sig (A:=A) (fun x => P)) : type_scope.
 Notation "{ x : A  |  P  & Q }" := (sig2 (A:=A) (fun x => P) (fun x => Q)) :
   type_scope.
+
+(** [sum A B], also noted [A + B] is the disjoint sum of datatypes [A] and [B]. *)
+Variant sum A B : Type :=
+| Left of A
+| Right of B.
+
+Infix "+" := sum (at level 50, left associativity) : type_scope.
+
+Arguments Left {A B} _.
+Arguments Right {A B} _.
