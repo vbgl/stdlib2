@@ -17,6 +17,8 @@ Require Import prelude ssreflect.
 Reserved Notation "x <-> y" (at level 95, no associativity).
 Reserved Notation "x \/ y" (at level 85, right associativity).
 Reserved Notation "x ∨ y" (at level 85, right associativity).
+Reserved Notation "x /\ y" (at level 80, right associativity).
+Reserved Notation "x ∧ y" (at level 80, right associativity).
 Reserved Notation "~ x" (at level 75, right associativity).
 Reserved Notation "¬ x" (at level 75, right associativity).
 
@@ -74,10 +76,17 @@ Ltac ssrdone0 :=
 Record and (A B : Prop) : Prop :=
   and_intro { and_proj1 : A; and_proj2 : B }.
 
-Reserved Notation "x /\ y" (at level 80, right associativity).
-Reserved Notation "x ∧ y" (at level 80, right associativity).
 Notation "A /\ B" := (and A B) : type_scope.
 Infix "∧" := and : type_scope.
+
+Variant or (A B: Prop) : Prop :=
+| OrL of A
+| OrR of B.
+
+Infix "\/" := or : type_scope.
+Infix "∨" := or : type_scope.
+
+Register or as core.or.type.
 
 Record iff (A B : Prop) : Prop :=
   iff_intro { iff_proj1 : A -> B; iff_proj2 : B -> A }.
@@ -100,3 +109,20 @@ End ApplyIff.
 
 Hint View for move/ iffLRn|2 iffRLn|2 iffLR|2 iffRL|2.
 Hint View for apply/ iffRLn|2 iffLRn|2 iffRL|2 iffLR|2.
+
+(** Existential quantification *)
+Variant ex A (P: A -> Type) : Prop :=
+| Ex a `(P a).
+
+Notation "'exists' x .. y , p" := (ex (fun x => .. (ex (fun y => p)) ..))
+  (at level 200, x binder, right associativity,
+   format "'[' 'exists' '/ ' x .. y , '/ ' p ']'")
+: type_scope.
+
+Register ex as core.ex.type.
+
+Variant ex2 A (P Q: A -> Type) : Prop :=
+| Ex2 a `(P a) `(Q a).
+
+Notation "'exists2' x , p & q" := (ex2 (fun x => p) (fun x => q))
+  (at level 200, x ident, p at level 200, right associativity) : type_scope.
