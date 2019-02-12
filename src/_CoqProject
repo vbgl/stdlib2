@@ -1,4 +1,6 @@
 -arg -noinit
+-arg -w
+-arg +non-primitive-record
 -R . Stdlib
 
 abstract.v

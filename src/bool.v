@@ -1254,7 +1254,7 @@ Definition isMem pT topred mem := mem = (fun p : pT => Mem [eta topred p]).
 Structure predType := PredType {
   pred_sort :> Type;
   topred : pred_sort -> pred T;
-  _ : {mem | isMem topred mem}
+  _predType_2 : {mem | isMem topred mem}
 }.
 
 Definition mkPredType pT toP := PredType (exist (@isMem pT toP) _ eq_refl).
@@ -1390,7 +1390,7 @@ Implicit Types (x : T) (p : pred T) (sp : simpl_pred T) (pp : pT).
 (* unification (probably due to conversion cache cross-talk).                 *)
 Structure manifest_applicative_pred p := ManifestApplicativePred {
   manifest_applicative_pred_value :> pred T;
-  _ : manifest_applicative_pred_value = p
+  _manifest_applicative_pred_2 : manifest_applicative_pred_value = p
 }.
 Definition ApplicativePred p := ManifestApplicativePred (eq_refl p).
 Canonical applicative_pred_applicative sp :=
@@ -1398,13 +1398,13 @@ Canonical applicative_pred_applicative sp :=
 
 Structure manifest_simpl_pred p := ManifestSimplPred {
   manifest_simpl_pred_value :> simpl_pred T;
-  _ : manifest_simpl_pred_value = SimplPred p
+  _manifest_simpl_pred_2 : manifest_simpl_pred_value = SimplPred p
 }.
 Canonical expose_simpl_pred p := ManifestSimplPred (eq_refl (SimplPred p)).
 
 Structure manifest_mem_pred p := ManifestMemPred {
   manifest_mem_pred_value :> mem_pred T;
-  _ : manifest_mem_pred_value= Mem [eta p]
+  _manifest_mem_pred_2 : manifest_mem_pred_value= Mem [eta p]
 }.
 Canonical expose_mem_pred p :=  @ManifestMemPred p _ eq_refl.
 
