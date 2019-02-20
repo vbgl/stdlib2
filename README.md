@@ -7,13 +7,16 @@ at: https://github.com/coq/coq/issues/7711 and
 https://github.com/orgs/coq/projects/1
 
 We foresee several stages:
-- Preliminary clean-up and infrastructure work
-- Implementation of prelude and basic tactics
-- Experimentation on existing libraries (for example, to compare canonical
-  structures and type classes)
-- Implementation of the first components of the library
-- Extensions of the library
+ 1. Preliminary clean-up and infrastructure work
+ 1. Implementation of prelude and basic tactics
+ 1. Experimentation on existing libraries (for example, to compare canonical
+    structures and type classes)
+ 1. First release.
+ 1. Implementation of the first components of the library
+ 1. Extensions of the library
 
-The project is currently in its first phase. Questions and discussions are
-welcome at this stage. External code contribution will be integrated during the
-last two phases.
+The project is currently in its second phase. External code contribution will be
+integrated during the last two phases. Questions and discussions are welcome at
+this stage. In particular, the wiki and issues (as opposed to code reviews) can
+be used to share and discuss opinions.
+
