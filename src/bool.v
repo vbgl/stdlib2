@@ -478,14 +478,6 @@ Ltac done :=
    | case not_locked_false_eq_true; assumption
    | match goal with H : ~ _ |- _ => solve [case H; trivial] end ].
 
-(* Quicker done tactic not including split, syntax: /0/ *)
-Ltac ssrdone0 :=
-  trivial; hnf; intros; solve
-   [ do ![solve [trivial | apply: eq_sym; trivial]
-         | discriminate | contradiction ]
-   | case not_locked_false_eq_true; assumption
-   | match goal with H : ~ _ |- _ => solve [case H; trivial] end ].
-
 (**  Shorter names.  **)
 Definition isT := is_true_true.
 Definition notF := not_false_is_true.

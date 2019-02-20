@@ -59,13 +59,6 @@ Ltac done :=
          | discriminate | contradiction | split]
    | match goal with H : ~ _ |- _ => solve [case H; trivial] end ].
 
-(* Quicker done tactic not including split, syntax: /0/ *)
-Ltac ssrdone0 :=
-  trivial; hnf; intros; solve
-   [ do ![solve trivial
-         | discriminate | contradiction ]
-   | match goal with H : ~ _ |- _ => solve [case H; trivial] end ].
-
 (** [and A B], written [A /\ B], is the conjunction of [A] and [B]
 
     [and_intro p q] is a proof of [A /\ B] as soon as

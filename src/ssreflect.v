@@ -301,13 +301,6 @@ Ltac done :=
          | discriminate | contradiction | split]
    ].
 
-(* Quicker done tactic not including split, syntax: /0/ *)
-Ltac ssrdone0 :=
-  trivial; hnf; intros; solve
-   [ do ![solve trivial
-         | discriminate | contradiction ]
-   ].
-
 (**  The internal lemmas for the have tactics.  **)
 
 Definition ssr_have Plemma Pgoal (step : Plemma) rest : Pgoal := rest step.

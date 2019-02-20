@@ -89,10 +89,3 @@ Ltac done :=
    [ do ![solve [trivial | apply: eq_sym; trivial]
          | discriminate | contradiction | split]
    | match goal with H : ~ _ |- _ => solve [case H; trivial] end ].
-
-(* Quicker done tactic not including split, syntax: /0/ *)
-Ltac ssrdone0 :=
-  trivial; hnf; intros; solve
-   [ do ![solve trivial
-         | discriminate | contradiction ]
-   | match goal with H : ~ _ |- _ => solve [case H; trivial] end ].
