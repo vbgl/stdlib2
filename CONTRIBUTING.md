@@ -6,7 +6,7 @@ contributing, you should comply to these conventions to get your code
 integrated to the library.
 
 This file is not comprehensive yet and might still contain mistakes or
-unclear indications, please consider contributing.
+unclear indications, please consider improving it.
 
 ## Proof style.
 ### General guidelines
