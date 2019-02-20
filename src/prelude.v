@@ -13,6 +13,7 @@ Global Set Implicit Arguments.
 Global Unset Strict Implicit.
 Global Unset Printing Implicit Defensive.
 Global Set Primitive Projections.
+Global Set Auto Template Polymorphism.
 
 (** Plugins loaded initially *)
 Declare ML Module "ltac_plugin".

@@ -116,8 +116,7 @@ Notation "P : 'Prop'" := (P%type : Prop)
   (at level 100, only parsing) : core_scope.
 
 (**  Constants for tactic-views  **)
-#[universes(template)]
-Inductive external_view : Type := tactic_view of Type.
+Variant external_view : Type := tactic_view of Type.
 
 (**
  Syntax for referring to canonical structures:
