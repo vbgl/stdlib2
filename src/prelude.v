@@ -19,6 +19,7 @@ Global Set Auto Template Polymorphism.
 Declare ML Module "ltac_plugin".
 Declare ML Module "ssrmatching_plugin".
 Declare ML Module "ssreflect_plugin".
+Declare ML Module "numeral_notation_plugin".
 
 (** Enable proof mode. *)
 Global Set Default Proof Mode "Classic".
@@ -42,3 +43,6 @@ Open Scope type_scope.
 (** Notations available initially *)
 Reserved Notation "x -> y" (at level 99, right associativity, y at level 200).
 Notation "A -> B" := (forall (_ : A), B) : type_scope.
+Notation "'λ' x .. y , t" := (fun x => .. (fun y => t) ..)
+  (at level 200, x binder, y binder, right associativity,
+  format "'[  ' '[  ' 'λ'  x  ..  y ']' ,  '/' t ']'").
