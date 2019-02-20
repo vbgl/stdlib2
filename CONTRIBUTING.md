@@ -63,19 +63,13 @@ We write
 
 ### Term style.
 - Operators are surrounded by space, for example `n*m` should be written `n * m`.
-This particular example can be problematic if matrix.v is imported because then, `M *m N` is matrix product.
 
 ### Naming of variables
 - Variable names follow the following conventions.
   + Hypothesis should not be named `H`, `H'`,... (these collide with
   subgroup variable conventions) but have meaningful names. For
   example, an hypothesis `n > 0` should be named `n_gt0`.
-  + Induction Hypotheses are prefixed by `IH` or `ih` (e.g. induction hypothesis on `n` is called `IH`).
-  + Natural numbers and integers should be named `m`, `n`, `p`, `d`, ...
-  + Elements of another ring should be named `x`, `y`, `z`, `u`, `v`, `w`, ...
-  + Polynomials should be named by lower case letter `p`, `q`, `r` ... (to avoid collision with properties named `P`, `Q`, ...)
-  + Matrices should be named `A`, `B`, ..., `M`, `N`, ...
-  + Names as `l`or `I` are best avoided, as they can be hard to distinguish.
+  + Induction Hypotheses are prefixed by `IH` or `ih`
 
 ### Naming conventions (Non exhaustive)
 #### Names in the library usually obey one of following the convention

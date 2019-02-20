@@ -18,8 +18,8 @@ We foresee several stages:
 
 ## Current status
 
-The project is currently (20190220) in its second phase (starting the actual
-implementation).
+The project is currently (February 2019) in its second phase (starting the
+actual implementation).
 
 Questions and discussions are welcome at this stage. In particular, the wiki and
 issues (as opposed to code reviews) can be used to share and discuss opinions.
