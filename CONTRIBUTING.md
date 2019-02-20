@@ -1,7 +1,11 @@
 # Contribution Guide
 
-This file is not comprehensive yet and might still contain mistakes or
-unclear indications, please consider improving it.
+This guide describes the styling conventions that are applicable to the
+development of this library.
+
+This file is not comprehensive yet, it contains mistakes and unclear
+indications, and some topics may have been overlooked: please consider improving
+it.
 
 ## Layout of the file system
 
