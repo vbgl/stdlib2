@@ -14,4 +14,4 @@ nat.v
 prelude.v
 prop.v
 ssreflect.v
-ssrmatching.v
+matching.v
