@@ -20,8 +20,8 @@ Lemma unitE : all_equal_to tt. Proof. by case. Qed.
 (** [option A] is the extension of [A] with an extra element [None] *)
 
 Variant option (A : Type) : Type :=
-  | Some : A -> option A
-  | None : option A.
+  | Some of A
+  | None.
 
 Arguments Some {A} _.
 Arguments None {A}.

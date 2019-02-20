@@ -1,8 +1,8 @@
-Require Import prelude.
+Require Import prelude ssreflect.
 
 Inductive nat :=
 | O
-| S `(nat).
+| S of nat.
 
 Register nat as num.nat.type.
 Register O as num.nat.O.

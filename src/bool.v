@@ -784,16 +784,16 @@ Qed.
  expressions that associate to the RIGHT. This is consistent with the right
  associativity of list expressions and thus more convenient in most proofs.  **)
 
-Inductive and3 (P1 P2 P3 : Prop) : Prop := And3 of P1 & P2 & P3.
+Variant and3 (P1 P2 P3 : Prop) : Prop := And3 of P1 & P2 & P3.
 
-Inductive and4 (P1 P2 P3 P4 : Prop) : Prop := And4 of P1 & P2 & P3 & P4.
+Variant and4 (P1 P2 P3 P4 : Prop) : Prop := And4 of P1 & P2 & P3 & P4.
 
-Inductive and5 (P1 P2 P3 P4 P5 : Prop) : Prop :=
+Variant and5 (P1 P2 P3 P4 P5 : Prop) : Prop :=
   And5 of P1 & P2 & P3 & P4 & P5.
 
-Inductive or3 (P1 P2 P3 : Prop) : Prop := Or31 of P1 | Or32 of P2 | Or33 of P3.
+Variant or3 (P1 P2 P3 : Prop) : Prop := Or31 of P1 | Or32 of P2 | Or33 of P3.
 
-Inductive or4 (P1 P2 P3 P4 : Prop) : Prop :=
+Variant or4 (P1 P2 P3 P4 : Prop) : Prop :=
   Or41 of P1 | Or42 of P2 | Or43 of P3 | Or44 of P4.
 
 Notation "[ /\ P1 & P2 ]" := (and P1 P2) (only parsing) : type_scope.
