@@ -1,0 +1,31 @@
+version: 2.1
+executors:
+  nixos-executor:
+    docker:
+    - image: nixorg/nix:circleci
+    environment:
+      NIX_PATH=nixpkgs=channel:nixpkgs-unstable
+
+jobs:
+  build-job:
+    executor: nixos-executor
+    steps:
+      - run:
+          name: Install Cachix
+          command: nix-env -iA cachix -f https://cachix.org/api/v1/install
+      - checkout
+      - run:
+          name: Fetch dependencies
+          command: nix-shell --extra-substituters https://coq.cachix.org --trusted-public-keys "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY= coq.cachix.org-1:5QW/wwEnD+l2jvN6QRbRRsa4hBHG3QiQQ26cxu1F5tI=" --run 'echo done'
+      - run:
+          name: Build Stdlib2
+          command: nix-build
+
+workflows:
+  version: 2
+  build-workflow:
+    jobs:
+      - build-job:
+          filters:
+            branches:
+              only: /.*/
