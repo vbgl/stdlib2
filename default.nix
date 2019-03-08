@@ -9,4 +9,5 @@ let callPackage = pkgs.newScope { inherit coq; }; in
 rec {
   stdlib2 = callPackage ./stdlib2.nix { };
 
+  math-comp = callPackage ./math-comp.nix { inherit stdlib2; };
 }

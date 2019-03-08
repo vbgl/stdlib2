@@ -1,0 +1,3 @@
+[submodule "math-comp"]
+	path = math-comp
+	url = https://github.com/vbgl/math-comp.git
