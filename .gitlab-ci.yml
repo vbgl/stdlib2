@@ -4,6 +4,7 @@ stages:
 image: nixorg/nix
 
 variables:
+  GIT_SUBMODULE_STRATEGY: normal
   NIX_PATH: nixpkgs=channel:nixpkgs-unstable
   NIXOS_PUBLIC_KEY: cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=
   EXTRA_SUBSTITUTERS: https://coq.cachix.org
