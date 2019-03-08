@@ -94,6 +94,10 @@ Register prod_rect as core.prod.rect.
 Register fst as core.prod.proj1.
 Register snd as core.prod.proj2.
 
+Lemma pairI (A B: Type) (p q: A * B) (e: p = q) :
+  let: (a, b) := p in a = q.1 /\ b = q.2.
+Proof. exact: (let: eq_refl := e in and_intro eq_refl eq_refl). Qed.
+
 (** [(sig A P)], or more suggestively [{x:A | P x}], denotes the subset
     of elements of the type [A] which satisfy the predicate [P].
     Similarly [(sig2 A P Q)], or [{x:A | P x & Q x}], denotes the subset
@@ -121,6 +125,12 @@ Notation "{ x : A  |  P }" := (sig (A:=A) (fun x => P)) : type_scope.
 Notation "{ x : A  |  P  & Q }" := (sig2 (A:=A) (fun x => P) (fun x => Q)) :
   type_scope.
 
+Lemma sigI (A: Type) (P: A -> Type) (x y: sig P) (e: x = y) :
+  let: exist _ a pa := x in
+  exists eq_a : a = y.(sig_proj1),
+    eq_rect a P pa y.(sig_proj1) eq_a = y.(sig_proj2).
+Proof. by rewrite e; exists eq_refl. Qed.
+
 (** [sum A B], also noted [A + B] is the disjoint sum of datatypes [A] and [B]. *)
 Variant sum A B : Type :=
 | Left of A
@@ -130,3 +140,10 @@ Infix "+" := sum (at level 50, left associativity) : type_scope.
 
 Arguments Left {A B} _.
 Arguments Right {A B} _.
+
+Lemma sumI (A B: Type) (x x': A + B) (e: x = x') :
+  match x with
+  | Left a => if x' is Left a' then a = a' else False
+  | Right b => if x' is Right b' then b = b' else False
+  end.
+Proof. by move: e => -> {x}; case: x'. Qed.

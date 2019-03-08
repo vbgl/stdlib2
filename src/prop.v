@@ -64,7 +64,7 @@ Ltac done :=
     [and_intro p q] is a proof of [A /\ B] as soon as
     [p] is a proof of [A] and [q] a proof of [B]
 
-    [and_fst] and [and_snd] are first and second projections of a conjunction *)
+    [and_proj1] and [and_proj2] are first and second projections of a conjunction *)
 
 Record and (A B : Prop) : Prop :=
   and_intro { and_proj1 : A; and_proj2 : B }.
