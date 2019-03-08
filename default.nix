@@ -4,15 +4,9 @@
 
 let coq = import (fetchTarball https://github.com/coq/coq-on-cachix/tarball/master) {}; in
 
-pkgs.stdenv.mkDerivation {
-  name = "coq-stdlib2-0.0.0";
-  buildInputs = [ coq ];
-  src = ./src;
-  configurePhase = "./bootstrap";
+let callPackage = pkgs.newScope { inherit coq; }; in
 
-  installFlags = "COQLIB=$(out)/lib/coq/${coq.coq-version}";
+rec {
+  stdlib2 = callPackage ./stdlib2.nix { };
 
-  meta = {
-    inherit (coq.meta) homepage platforms license;
-  };
 }
