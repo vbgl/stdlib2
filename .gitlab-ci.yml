@@ -17,6 +17,7 @@ build-stdlib2:
     nix-shell
     --extra-substituters "$EXTRA_SUBSTITUTERS"
     --trusted-public-keys "$NIXOS_PUBLIC_KEY $EXTRA_PUBLIC_KEYS"
+    -A stdlib2
     --run 'echo done'
   script:
   - nix-build
