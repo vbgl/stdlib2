@@ -401,6 +401,7 @@ Section Tag.
 
 Variables (I : Type) (i : I) (T_ U_ : I -> Type).
 
+Definition Tag := sig T_.
 Definition tag := sig_proj1.
 Definition tagged : forall w, T_(tag w) := @sig_proj2 I [eta T_].
 Definition Tagged x := @exist I [eta T_] i x.

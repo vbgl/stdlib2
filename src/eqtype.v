@@ -58,7 +58,7 @@ Import functions.
 (* Equality on an eqType is proof-irrelevant (lemma eq_irrelevance).          *)
 (*   The eqType interface is implemented for most standard datatypes:         *)
 (*  bool, unit, void, option, prod (denoted A * B), sum (denoted A + B),      *)
-(*  sig (denoted {x | P}), sigT (denoted {i : I & T}). We also define         *)
+(*  sig (denoted {x | P}). We also define         *)
 (*   tagged_as u v == v cast as T_(tag u) if tag v == tag u, else u.          *)
 (*  -> We have u == v <=> (tag u == tag v) && (tagged u == tagged_as u v).    *)
 (* The subType interface supports the following operations:                   *)
@@ -165,6 +165,7 @@ Lemma eqP T : Equality.axiom (@eq_op T).
 Proof. by case: T => ? []. Qed.
 Arguments eqP {T x y}.
 
+Declare Scope eq_scope.
 Delimit Scope eq_scope with EQ.
 Open Scope eq_scope.
 
@@ -461,6 +462,8 @@ Definition app_fdelta df f z :=
 End FunWith.
 
 Prenex Implicits fwith.
+
+Declare Scope fun_delta_scope.
 
 Notation "x |-> y" := (FunDelta x y)
   (at level 190, no associativity,
@@ -809,7 +812,7 @@ Arguments opt_eq {T} !u !v.
 Section TaggedAs.
 
 Variables (I : eqType) (T_ : I -> Type).
-Implicit Types u v : {i : I | T_ i}.
+Implicit Types u v : { i : I | T_ i }.
 
 Definition tagged_as u v :=
   if tag u =P tag v is ReflectT eq_uv then
@@ -826,7 +829,7 @@ End TaggedAs.
 Section TagEqType.
 
 Variables (I : eqType) (T_ : I -> eqType).
-Implicit Types u v : {i : I | T_ i}.
+Implicit Types u v : Tag T_.
 
 Definition tag_eq u v := (tag u == tag v) && (tagged u == tagged_as u v).
 
@@ -838,20 +841,14 @@ by apply: (iffP eqP) => [->|<-]; rewrite tagged_asE.
 Qed.
 
 Canonical tag_eqMixin := EqMixin tag_eqP.
-Canonical tag_eqType := Eval hnf in EqType {i : I | T_ i} tag_eqMixin.
+Canonical tag_eqType := Eval hnf in EqType (Tag T_) tag_eqMixin.
 
-(* FIXME: the “tag_eqType” should be inferred *)
-Fail Lemma tag_eqE : tag_eq = eq_op.
-Lemma tag_eqE : tag_eq = @eq_op (tag_eqType). Proof. by []. Qed.
+Lemma tag_eqE : tag_eq = eq_op. Proof. by []. Qed.
 
-(* FIXME: the “tag_eqType” should be inferred *)
-Fail Lemma eq_tag u v : u == v -> tag u = tag v.
-Lemma eq_tag (u v: tag_eqType) : u == v -> tag u = tag v.
+Lemma eq_tag u v : u == v -> tag u = tag v.
 Proof. by move/eqP->. Qed.
 
-(* FIXME: the “tag_eqType” should be inferred *)
-Fail Lemma eq_Tagged u x : (u == Tagged _ x) = (tagged u == x).
-Lemma eq_Tagged (u: tag_eqType) x : (u == Tagged _ x) = (tagged u == x).
+Lemma eq_Tagged u x : (u == Tagged _ x) = (tagged u == x).
 Proof. by rewrite -tag_eqE /tag_eq eqxx tagged_asE. Qed.
 
 End TagEqType.
