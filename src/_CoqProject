@@ -13,9 +13,11 @@ eqtype.v
 equality.v
 functions.v
 lock.v
+morenat.v
 nat.v
 prelude.v
 prelude_plugins.v
 prop.v
+seq.v
 ssreflect.v
 matching.v
