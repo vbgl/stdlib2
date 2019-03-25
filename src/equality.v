@@ -76,9 +76,11 @@ Register eq_congr1 as core.eq.congr.
 Definition eq_rect_r A (x: A) (P: A -> Type) (ih: P x) y (e: y = x) : P y :=
   eq_rect x P ih y (eq_sym e).
 
+Definition eq_rec_r := eq_rect_r.
 Definition eq_ind_r := eq_rect_r.
 
 Arguments eq_rect_r {A x} P _ {y} _.
+Arguments eq_rec_r {A x} P _ {y} _.
 Arguments eq_ind_r {A x} P _ {y} _.
 
 Lemma neq_sym A (x y : A) : x <> y -> y <> x.
@@ -89,6 +91,6 @@ Definition all_equal_to T (x0 : T) := forall x, unkeyed x = x0.
 
 Ltac done :=
   trivial; hnf; intros; solve
-   [ do ![solve [trivial | apply: eq_sym; trivial]
+   [ do ![solve [trivial | apply: equality.eq_sym; trivial]
          | discriminate | contradiction | split]
    | match goal with H : ~ _ |- _ => solve [case H; trivial] end ].
