@@ -473,7 +473,7 @@ Proof. unlock; discriminate. Qed.
 (* The basic closing tactic "done".                                           *)
 Ltac done :=
   trivial; hnf; intros; solve
-   [ do ![solve [trivial | apply: eq_sym; trivial]
+   [ do ![solve [trivial | apply: equality.eq_sym; trivial]
          | discriminate | contradiction | split]
    | case not_locked_false_eq_true; assumption
    | match goal with H : ~ _ |- _ => solve [case H; trivial] end ].

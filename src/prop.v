@@ -52,13 +52,6 @@ Hint Constants Opaque : core.
 
 Hint Unfold not: core.
 
-(* The basic closing tactic "done".                                           *)
-Ltac done :=
-  trivial; hnf; intros; solve
-   [ do ![solve trivial
-         | discriminate | contradiction | split]
-   | match goal with H : ~ _ |- _ => solve [case H; trivial] end ].
-
 (** [and A B], written [A /\ B], is the conjunction of [A] and [B]
 
     [and_intro p q] is a proof of [A /\ B] as soon as

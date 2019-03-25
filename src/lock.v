@@ -10,6 +10,10 @@
 
 Require Import ssreflect prelude prop datatypes equality.
 
+(**  Ssreflect converse rewrite rule rule idiom.  **)
+Definition ssr_converse R (r : R) := (prop.I, r).
+Notation "=^~ r" := (ssr_converse r) (at level 100) : form_scope.
+
 (* Term tagging (user-level).                                                 *)
 (* The ssreflect library uses four strengths of term tagging to restrict      *)
 (* convertibility during type checking:                                       *)
