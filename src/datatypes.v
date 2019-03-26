@@ -98,6 +98,12 @@ Lemma pairI (A B: Type) (p q: A * B) (e: p = q) :
   let: (a, b) := p in a = q.1 /\ b = q.2.
 Proof. exact: (let: eq_refl := e in and_intro eq_refl eq_refl). Qed.
 
+Definition prod_uncurry (A B C: Type) (f: A * B -> C) (a: A) (b: B) : C :=
+  f (a, b).
+
+Definition prod_curry (A B C: Type) (f: A -> B -> C) (p: A * B) : C :=
+  let: (a, b) := p in f a b.
+
 (** [(sig A P)], or more suggestively [{x:A | P x}], denotes the subset
     of elements of the type [A] which satisfy the predicate [P].
     Similarly [(sig2 A P Q)], or [{x:A | P x & Q x}], denotes the subset
