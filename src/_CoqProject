@@ -6,6 +6,7 @@
 abstract.v
 base.v
 bool.v
+choice.v
 congr.v
 datatypes.v
 decimal.v
