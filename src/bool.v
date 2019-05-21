@@ -1511,7 +1511,7 @@ Variant pred_key (p : predPredType T) := DefaultPredKey.
 
 Variable p : predPredType T.
 Structure keyed_pred (k : pred_key p) :=
-  PackKeyedPred { unkey_pred :> pred_class; _keyed_pred_1 : unkey_pred =i p}.
+  PackKeyedPred { unkey_pred :> pred_class; #[canonical(false)] _keyed_pred_1 : unkey_pred =i p}.
 
 Variable k : pred_key p.
 Definition KeyedPred := @PackKeyedPred k p (frefl _).
@@ -1572,7 +1572,7 @@ Lemma all_tag_cond_dep I T (C : pred I) U :
     (forall x, T x) -> (forall x, C x -> {y : T x | U x y}) ->
   {f : forall x, T x | forall x, C x -> U x (f x)}.
 Proof.
-move=> f0 fP; apply: all_tag (fun x y => C x -> U x y) _ => x.
+move=> f0 fP; apply: all_sig (fun x y => C x -> U x y) _ => x.
 by case Cx: (C x); [case/fP: Cx => y; exists y | exists (f0 x)].
 Qed.
 

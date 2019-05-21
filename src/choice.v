@@ -125,7 +125,7 @@ Definition seq_of_opt := @oapp T _ (nseq 1) [::].
 Lemma seq_of_optK : cancel seq_of_opt ohead. Proof. by case. Qed.
 
 Definition tag_of_pair (p : T1 * T2) := @Tagged T1 p.1 (fun _ => T2) p.2.
-Definition pair_of_tag (u : {i : T1 | T2}) := (tag u, tagged u).
+Definition pair_of_tag (u : {i : T1 & T2}) := (tag u, tagged u).
 Lemma tag_of_pairK : cancel tag_of_pair pair_of_tag. Proof. by case. Qed.
 Lemma pair_of_tagK : cancel pair_of_tag tag_of_pair. Proof. by case. Qed.
 
@@ -448,7 +448,7 @@ Section TagChoice.
 
 Variables (I : choiceType) (T_ : I -> choiceType).
 
-Fact tagged_choiceMixin : choiceMixin {i : I | T_ i}.
+Fact tagged_choiceMixin : choiceMixin {i : I & T_ i}.
 Proof.
 pose mkT i (x : T_ i) := Tagged T_ x.
 pose ft tP n i := omap (mkT i) (find (tP \o mkT i) n).
@@ -468,7 +468,7 @@ exists f => [tP n u | tP [[i x] tPxi] | sP sQ eqPQ n].
   by case: find => //= i; congr (omap _ _); apply: extensional => x /=.
 Qed.
 Canonical tagged_choiceType :=
-  Eval hnf in ChoiceType (Tag T_) tagged_choiceMixin.
+  Eval hnf in ChoiceType { i : I & T_ i } tagged_choiceMixin.
 
 End TagChoice.
 
@@ -531,13 +531,12 @@ Section ClassDef.
 Record class_of T := Class { base : Choice.class_of T; mixin : mixin_of T }.
 Local Coercion base : class_of >-> Choice.class_of.
 
-Structure type : Type := Pack {sort : Type; _ : class_of sort}.
+Structure type : Type := Pack {sort : Type; #[canonical(false)] class : class_of sort}.
 Local Coercion sort : type >-> Sortclass.
 Variables (T : Type) (cT : type).
-Definition class := let: Pack _ c as cT' := cT return class_of cT' in c.
 Definition clone c of phant_id class c := @Pack T c.
-Let xT := let: Pack T _ := cT in T.
-Notation xclass := (class : class_of xT).
+Let xT := let: @Pack T _ := cT in T.
+Notation xclass := (class _ : class_of xT).
 
 Definition pack m :=
   fun bT b & phant_id (Choice.class bT) b => Pack (@Class T b m).
@@ -629,10 +628,10 @@ Variables (T : choiceType) (P : pred T).
 Import Countable.
 
 Structure subCountType : Type :=
-  SubCountType {subCount_sort :> subType P; _ : mixin_of subCount_sort}.
+  SubCountType {subCount_sort :> subType P; _subCountType_1 : mixin_of subCount_sort}.
 
 Coercion sub_countType (sT : subCountType) :=
-  Eval hnf in pack (let: SubCountType _ m := sT return mixin_of sT in m) id.
+  Eval hnf in pack (let: SubCountType m := sT return mixin_of sT in m) id.
 Canonical sub_countType.
 
 Definition pack_subCountType U :=
@@ -677,7 +676,7 @@ Canonical nat_countType := Eval hnf in CountType nat nat_countMixin.
 
 Definition bool_countMixin := CanCountMixin oddb.
 Canonical bool_countType := Eval hnf in CountType bool bool_countMixin.
-Canonical bitseq_countType :=  Eval hnf in [countType of bitseq].
+(* FIXME: Canonical bitseq_countType :=  Eval hnf in [countType of bitseq]. *)
 
 Definition unit_countMixin := CanCountMixin bool_of_unitK.
 Canonical unit_countType := Eval hnf in CountType unit unit_countMixin.

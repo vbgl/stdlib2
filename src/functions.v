@@ -401,15 +401,14 @@ Section Tag.
 
 Variables (I : Type) (i : I) (T_ U_ : I -> Type).
 
-Definition Tag := sig T_.
-Definition tag := sig_proj1.
-Definition tagged : forall w, T_(tag w) := @sig_proj2 I [eta T_].
-Definition Tagged x := @exist I [eta T_] i x.
+Definition tag := sigT_proj1.
+Definition tagged : forall w, T_(tag w) := @sigT_proj2 I [eta T_].
+Definition Tagged x := @existT I [eta T_] i x.
 
-Definition tag2 (w : @sig2 I T_ U_) := sig2_proj1 w.
-Definition tagged2 w : T_(tag2 w) := sig2_proj2 w.
-Definition tagged2' w : U_(tag2 w) := sig2_proj3 w.
-Definition Tagged2 x y := @exist2 I [eta T_] [eta U_] i x y.
+Definition tag2 (w : @sigT2 I T_ U_) := sigT2_proj1 w.
+Definition tagged2 w : T_(tag2 w) := sigT2_proj2 w.
+Definition tagged2' w : U_(tag2 w) := sigT2_proj3 w.
+Definition Tagged2 x y := @existT2 I [eta T_] [eta U_] i x y.
 
 End Tag.
 
@@ -417,17 +416,17 @@ Arguments Tagged [I i].
 Arguments Tagged2 [I i].
 Prenex Implicits tag tagged Tagged tag2 tagged2 tagged2' Tagged2.
 
-Coercion tag_of_tag2 I T_ U_ (w : @sig2 I T_ U_) :=
+Coercion tag_of_tag2 I T_ U_ (w : @sigT2 I T_ U_) :=
   Tagged (fun i => T_ i * U_ i)%type (tagged2 w, tagged2' w).
 
 Lemma all_tag I T U :
-   (forall x : I, {y : T x | U x y}) ->
-  {f : forall x, T x | forall x, U x (f x)}.
+   (forall x : I, {y : T x & U x y}) ->
+  {f : forall x, T x & forall x, U x (f x)}.
 Proof. by move=> fP; exists (fun x => tag (fP x)) => x; case: (fP x). Qed.
 
 Lemma all_tag2 I T U V :
-    (forall i : I, {y : T i | U i y & V i y}) ->
-  {f : forall i, T i | forall i, U i (f i) & forall i, V i (f i)}.
+    (forall i : I, {y : T i & U i y & V i y}) ->
+  {f : forall i, T i & forall i, U i (f i) & forall i, V i (f i)}.
 Proof. by case/all_tag=> f /all_pair[]; exists f. Qed.
 
 (**  Refinement types.  **)

@@ -121,7 +121,7 @@ Notation class_of := mixin_of (only parsing).
 
 Section ClassDef.
 
-Structure type := Pack {sort; class : class_of sort}.
+Structure type := Pack {sort; #[canonical(false)] class : class_of sort}.
 Local Coercion sort : type >-> Sortclass.
 Variables (T : Type) (cT : type).
 
@@ -812,7 +812,7 @@ Arguments opt_eq {T} !u !v.
 Section TaggedAs.
 
 Variables (I : eqType) (T_ : I -> Type).
-Implicit Types u v : { i : I | T_ i }.
+Implicit Types u v : { i : I & T_ i }.
 
 Definition tagged_as u v :=
   if tag u =P tag v is ReflectT eq_uv then
@@ -829,19 +829,19 @@ End TaggedAs.
 Section TagEqType.
 
 Variables (I : eqType) (T_ : I -> eqType).
-Implicit Types u v : Tag T_.
+Implicit Types u v : { i : I & T_ i }.
 
 Definition tag_eq u v := (tag u == tag v) && (tagged u == tagged_as u v).
 
 Lemma tag_eqP : Equality.axiom tag_eq.
 Proof.
 rewrite /tag_eq => [] [i x] [j] /=.
-case: eqP => [<-|Hij] y; last by right; case/sigI.
+case: eqP => [<-|Hij] y; last by right; case/sigTI.
 by apply: (iffP eqP) => [->|<-]; rewrite tagged_asE.
 Qed.
 
 Canonical tag_eqMixin := EqMixin tag_eqP.
-Canonical tag_eqType := Eval hnf in EqType (Tag T_) tag_eqMixin.
+Canonical tag_eqType := Eval hnf in EqType { i : I & T_ i } tag_eqMixin.
 
 Lemma tag_eqE : tag_eq = eq_op. Proof. by []. Qed.
 
