@@ -16,6 +16,7 @@ functions.v
 lock.v
 morenat.v
 nat.v
+path.v
 prelude.v
 prelude_plugins.v
 prop.v
