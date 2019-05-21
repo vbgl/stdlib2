@@ -1,2 +1,2 @@
-Require matching functions.
-Export prelude matching ssreflect equality prop datatypes.
+Require matching functions lock.
+Export prelude matching ssreflect equality prop datatypes lock.
