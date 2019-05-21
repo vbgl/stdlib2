@@ -34,7 +34,7 @@ Notation "n .-1" := (predn n) (at level 2, left associativity,
 Notation "n .-2" := n.-1.-1 (at level 2, left associativity,
   format "n .-2") : nat_scope.
 
-Lemma nat_eqI (m n: nat) :
+Lemma natI (m n: nat) :
   m = n ->
   if m is m'.+1 then if n is n'.+1 then m' = n' else False
   else if n is O then True else False.

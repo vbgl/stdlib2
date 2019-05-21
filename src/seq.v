@@ -191,7 +191,7 @@ Notation "[ :: x1 ; x2 ; .. ; xn ]" := (x1 :: x2 :: .. [:: xn] ..)
   (at level 0, format "[ :: '['  x1 ; '/'  x2 ; '/'  .. ; '/'  xn ']' ]"
   ) : seq_scope.
 
-Lemma seq_eqI T (x x': seq T) :
+Lemma seqI T (x x': seq T) :
   x = x' ->
   if x is [:: h & t ] then if x' is [:: h' & t' ] then h = h' /\ t = t' else False
   else if x' is [::] then True else False.
@@ -373,7 +373,7 @@ Lemma eq_from_nth s1 s2 :
     size s1 = size s2 -> (forall i, i < size s1 -> nth s1 i = nth s2 i) ->
   s1 = s2.
 Proof.
-elim: s1 s2 => [|x1 s1 IHs1] [|x2 s2] //= /nat_eqI eq_sz eq_s12.
+elim: s1 s2 => [|x1 s1 IHs1] [|x2 s2] //= /natI eq_sz eq_s12.
 by rewrite [x1](eq_s12 0) // (IHs1 s2) // => i; apply: (eq_s12 i.+1).
 Qed.
 
@@ -817,7 +817,7 @@ Notation "[ 'seq' x : T <- s | C1 & C2 ]" := [seq x : T <- s | C1 && C2]
 Lemma seq2_ind T1 T2 (P : seq T1 -> seq T2 -> Type) :
     P [::] [::] -> (forall x1 x2 s1 s2, P s1 s2 -> P (x1 :: s1) (x2 :: s2)) ->
   forall s1 s2, size s1 = size s2 -> P s1 s2.
-Proof. by move=> Pnil Pcons; elim=> [|x s IHs] [] //= x2 s2 /nat_eqI /IHs/Pcons. Qed.
+Proof. by move=> Pnil Pcons; elim=> [|x s IHs] [] //= x2 s2 /natI /IHs/Pcons. Qed.
 
 Section Rev.
 
@@ -906,8 +906,8 @@ Fixpoint eqseq s1 s2 {struct s2} :=
 Lemma eqseqP : Equality.axiom eqseq.
 Proof.
 move; elim=> [|x1 s1 IHs] [|x2 s2]; do [by constructor | simpl].
-case: (x1 =P x2) => [<-|neqx]; last by right => /seq_eqI[].
-by apply: (iffP (IHs s2)) => [<-|/seq_eqI[]].
+case: (x1 =P x2) => [<-|neqx]; last by right => /seqI[].
+by apply: (iffP (IHs s2)) => [<-|/seqI[]].
 Qed.
 
 Canonical seq_eqMixin := EqMixin eqseqP.
@@ -922,7 +922,7 @@ Proof. by []. Qed.
 Lemma eqseq_cat s1 s2 s3 s4 :
   size s1 = size s2 -> (s1 ++ s3 == s2 ++ s4) = (s1 == s2) && (s3 == s4).
 Proof.
-elim: s1 s2 => [|x1 s1 IHs] [|x2 s2] //= /nat_eqI sz12.
+elim: s1 s2 => [|x1 s1 IHs] [|x2 s2] //= /natI sz12.
 by rewrite !eqseq_cons -andbA IHs.
 Qed.
 
@@ -1119,8 +1119,8 @@ Definition constant s := if s is x :: s' then all (pred1 x) s' else true.
 Lemma all_pred1P x s : reflect (s = nseq (size s) x) (all (pred1 x) s).
 Proof.
 elim: s => [|y s IHs] /=; first by left.
-case: eqP => [->{y} | ne_xy]; last by right=> [] /seq_eqI[? _]; case ne_xy.
-by apply: (iffP IHs) => [<- //| /seq_eqI[]].
+case: eqP => [->{y} | ne_xy]; last by right=> [] /seqI[? _]; case ne_xy.
+by apply: (iffP IHs) => [<- //| /seqI[]].
 Qed.
 
 Lemma all_pred1_constant x s : all (pred1 x) s -> constant s.
@@ -1796,7 +1796,7 @@ elim: s2 s1 => [|y s2 IHs2] [|x s1].
 - apply: {IHs2}(iffP (IHs2 _)) => [] [m sz_m def_s1].
     by exists ((x == y) :: m); rewrite /= ?sz_m // -def_s1; case: eqP => // ->.
   case: eqP => [_ | ne_xy]; last first.
-    by case: m def_s1 sz_m => [//|[m /seq_eqI[]//|m]] -> /nat_eqI <-; exists m.
+    by case: m def_s1 sz_m => [//|[m /seqI[]//|m]] -> /natI <-; exists m.
   pose i := index true m; have def_m_i: take i m = nseq (size (take i m)) false.
     apply/all_pred1P; apply/(all_nthP true) => j.
     rewrite size_take ltnNge geq_min negb_or -ltnNge; case/andP=> lt_j_i _.
@@ -2003,7 +2003,7 @@ Proof. by elim: m s => [|[|] m IHm] [|x p] //=; rewrite IHm. Qed.
 
 Lemma inj_map : injective f -> injective map.
 Proof.
-by move=> injf; elim=> [|y1 s1 IHs] [|y2 s2] //= /seq_eqI[/injf-> /IHs->].
+by move=> injf; elim=> [|y1 s1 IHs] [|y2 s2] //= /seqI[/injf-> /IHs->].
 Qed.
 
 End Map.
@@ -2170,7 +2170,7 @@ End MapComp.
 Lemma eq_in_map (T1 : eqType) T2 (f1 f2 : T1 -> T2) (s : seq T1) :
   {in s, f1 =1 f2} <-> map f1 s = map f2 s.
 Proof.
-elim: s => //= x s IHs; split=> [eqf12 | /seq_eqI[f12x /IHs eqf12]]; last first.
+elim: s => //= x s IHs; split=> [eqf12 | /seqI[f12x /IHs eqf12]]; last first.
   by move=> y /predU1P[-> | /eqf12].
 rewrite eqf12 ?mem_head //; congr (_ :: _).
 by apply/IHs=> y s_y; rewrite eqf12 // mem_behead.
@@ -2484,11 +2484,11 @@ Qed.
 
 Lemma zip_cat s1 s2 t1 t2 :
   size s1 = size t1 -> zip (s1 ++ s2) (t1 ++ t2) = zip s1 t1 ++ zip s2 t2.
-Proof. by elim: s1 t1 => [|x s IHs] [|y t] //= /nat_eqI/IHs->. Qed.
+Proof. by elim: s1 t1 => [|x s IHs] [|y t] //= /natI/IHs->. Qed.
 
 Lemma nth_zip x y s t i :
   size s = size t -> nth (x, y) (zip s t) i = (nth x s i, nth y t i).
-Proof. by elim: i s t => [|i IHi] [|y1 s1] [|y2 t] //= /nat_eqI/IHi->. Qed.
+Proof. by elim: i s t => [|i IHi] [|y1 s1] [|y2 t] //= /natI/IHi->. Qed.
 
 Lemma nth_zip_cond p s t i :
    nth p (zip s t) i
@@ -2506,7 +2506,7 @@ Proof. by move=> eq_sz; rewrite -!cats1 zip_cat //= eq_sz. Qed.
 Lemma rev_zip s1 s2 :
   size s1 = size s2 -> rev (zip s1 s2) = zip (rev s1) (rev s2).
 Proof.
-elim: s1 s2 => [|x s1 IHs] [|y s2] //= /nat_eqI eq_sz.
+elim: s1 s2 => [|x s1 IHs] [|y s2] //= /natI eq_sz.
 by rewrite !rev_cons zip_rcons ?IHs ?size_rev.
 Qed.
 
