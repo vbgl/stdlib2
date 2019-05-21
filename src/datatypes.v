@@ -109,33 +109,95 @@ Definition prod_curry (A B C: Type) (f: A -> B -> C) (p: A * B) : C :=
     Similarly [(sig2 A P Q)], or [{x:A | P x & Q x}], denotes the subset
     of elements of the type [A] which satisfy both [P] and [Q]. *)
 
-Record sig (A : Type) (P : A -> Type) : Type :=
+Record sig (A : Type) (P : A -> Prop) : Type :=
   exist { sig_proj1 : A;  sig_proj2 : P sig_proj1 }.
 
 Arguments exist {A} _.
 
-Record sig2 (A : Type) (P Q : A -> Type) : Type :=
+Record sig2 (A : Type) (P Q : A -> Prop) : Type :=
   exist2 { sig2_proj1 : A; sig2_proj2 : P sig2_proj1; sig2_proj3 : Q sig2_proj1 }.
 
 Arguments exist2 {A} _ _.
 
+(** [(sigT A P)], or more suggestively [{x:A & (P x)}] is a Σ-type.
+    Similarly for [(sigT2 A P Q)], also written [{x:A & (P x) & (Q x)}]. *)
+
+Record sigT (A: Type) (P: A -> Type) : Type :=
+  existT { sigT_proj1 : A ; sigT_proj2 : P sigT_proj1 }.
+
+Arguments existT {A} _.
+
+Record sigT2 (A: Type) (P Q: A -> Type) : Type :=
+  existT2 { sigT2_proj1 : A ; sigT2_proj2 : P sigT2_proj1 ; sigT2_proj3 : Q sigT2_proj1 }.
+
+Arguments existT2 {A} _ _.
+
+(** [sigT2] of a predicate can be projected to a [sigT].
+
+    This allows [sigT_proj1] and [sigT_proj2] to be usable with [sigT2].
+
+    The [let] statements occur in the body of the [existT] so that [sigT_proj1]
+    of a coerced [X : sigT2 P Q] will unify with [let (a, _, _) := X in a] *)
+
+Definition sigT_of_sigT2 (A : Type) (P Q : A -> Type) (X : sigT2 P Q) : sigT P
+  := existT P
+            (let (a, _, _) := X in a)
+            (let (x, p, _) as s return (P (let (a, _, _) := s in a)) := X in p).
+
 Reserved Notation "{ x  |  P }" (at level 0, x at level 99).
 Reserved Notation "{ x  |  P  & Q }" (at level 0, x at level 99).
+Reserved Notation "{ x  &  P }" (at level 0, x at level 99).
+Reserved Notation "{ x  &  P  & Q }" (at level 0, x at level 99).
 
 Reserved Notation "{ x : A  |  P }" (at level 0, x at level 99).
 Reserved Notation "{ x : A  |  P  & Q }" (at level 0, x at level 99).
+Reserved Notation "{ x : A  &  P }" (at level 0, x at level 99).
+Reserved Notation "{ x : A  &  P  & Q }" (at level 0, x at level 99).
 
 Notation "{ x  |  P }" := (sig (fun x => P)) : type_scope.
 Notation "{ x  |  P  & Q }" := (sig2 (fun x => P) (fun x => Q)) : type_scope.
 Notation "{ x : A  |  P }" := (sig (A:=A) (fun x => P)) : type_scope.
 Notation "{ x : A  |  P  & Q }" := (sig2 (A:=A) (fun x => P) (fun x => Q)) :
   type_scope.
+Notation "{ x  &  P }" := (sigT (fun x => P)) : type_scope.
+Notation "{ x : A  & P }" := (sigT (A:=A) (fun x => P)) : type_scope.
+Notation "{ x : A  & P  & Q }" := (sigT2 (A:=A) (fun x => P) (fun x => Q)) :
+  type_scope.
 
-Lemma sigI (A: Type) (P: A -> Type) (x y: sig P) (e: x = y) :
+Add Printing Let sig.
+Add Printing Let sig2.
+Add Printing Let sigT.
+Add Printing Let sigT2.
+
+Lemma sigI (A: Type) (P: A -> Prop) (x y: sig P) (e: x = y) :
   let: exist _ a pa := x in
   exists eq_a : a = y.(sig_proj1),
     eq_rect a P pa y.(sig_proj1) eq_a = y.(sig_proj2).
 Proof. by rewrite e; exists eq_refl. Qed.
+
+Lemma sigTI (A: Type) (P: A -> Type) (x y: sigT P) (e: x = y) :
+  let: existT _ a pa := x in
+  exists eq_a : a = y.(sigT_proj1),
+    eq_rect a P pa y.(sigT_proj1) eq_a = y.(sigT_proj2).
+Proof. by rewrite e; exists eq_refl. Qed.
+
+(*
+(** [sigT] of a predicate is equivalent to [sig] *)
+
+Coercion sig_of_sigT (A : Type) (P : A -> Prop) (X : sigT P) : sig P
+  := exist P (sigT_proj1 X) (sigT_proj2 X).
+
+Coercion sigT_of_sig (A : Type) (P : A -> Prop) (X : sig P) : sigT P
+  := existT P (sig_proj1 X) (sig_proj2 X).
+
+(** [sigT2] of a predicate is equivalent to [sig2] *)
+
+Coercion sig2_of_sigT2 (A : Type) (P Q : A -> Prop) (X : sigT2 P Q) : sig2 P Q
+  := exist2 P Q (sigT2_proj1 X) (sigT2_proj2 X) (sigT2_proj3 X).
+
+Coercion sigT2_of_sig2 (A : Type) (P Q : A -> Prop) (X : sig2 P Q) : sigT2 P Q
+  := existT2 P Q (sig2_proj1 X) (sig2_proj2 X) (sig2_proj3 X).
+*)
 
 (** [sum A B], also noted [A + B] is the disjoint sum of datatypes [A] and [B]. *)
 Variant sum A B : Type :=
