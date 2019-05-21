@@ -6,7 +6,7 @@ stdenv.mkDerivation {
 
   buildInputs = [ coq stdlib2 ];
 
-  buildFlags = "ssreflect/eqtype.vo";
+  buildFlags = "ssreflect/div.vo ssreflect/path.vo";
 
   installFlags = [
     "-f Makefile.coq"
