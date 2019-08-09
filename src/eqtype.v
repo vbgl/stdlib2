@@ -1,6 +1,6 @@
 (* (c) Copyright 2006-2016 Microsoft Corporation and Inria.                  *)
 (* Distributed under the terms of CeCILL-B.                                  *)
-Require Import base bool.
+Require Import base bool eqtype_aux.
 Import functions.
 
 (******************************************************************************)
@@ -632,7 +632,7 @@ Local Notation inlined_sub_rect :=
 Local Notation inlined_new_rect :=
   (fun K K_S u => let (x) as u return K u := u in K_S x).
 
-Notation "[ 'subType' 'for' v ]" := (SubType _ v _ inlined_sub_rect vrefl_rect)
+Notation "[ 'subType' 'for' v ]" := (SubType _ v (ltac2:(Control.refine (fun () => dual constr:(v)))) inlined_sub_rect vrefl_rect)
  (at level 0, only parsing) : form_scope.
 
 Notation "[ 'sub' 'Type' 'for' v ]" := (SubType _ v _ _ vrefl_rect)
@@ -670,9 +670,7 @@ Proof. by move=> u; apply: val_inj; apply: SubK. Qed.
 Prenex Implicits svalP s2val s2valP s2valP'.
 
 Canonical sig_subType T (P : pred T) : subType [eta P] :=
-    (*Eval hnf in [subType for @sval T [eta [eta P]]].*)
-  Eval hnf in (SubType _ (@sval T [eta [eta P]]) (exist _) inlined_sub_rect vrefl_rect).
-(* FIXME: “exist” should be inferred *)
+    Eval hnf in [subType for @sval T [eta [eta P]]].
 
 (* Shorthand for sigma types over collective predicates. *)
 Notation "{ x 'in' A }" := {x | x \in A}
@@ -725,7 +723,7 @@ Lemma val_eqP : ev_ax sT val. Proof. exact: inj_eqAxiom val_inj. Qed.
 Definition sub_eqMixin := EqMixin val_eqP.
 Canonical sub_eqType := Eval hnf in EqType sT sub_eqMixin.
 
-Definition SubEqMixin :=
+Definition SubEqMixin : Equality.mixin_of sT :=
   (let: SubType _ v _ _ _ as sT' := sT
      return ev_ax sT' val -> Equality.class_of sT' in
    fun vP : ev_ax _ v => EqMixin vP
@@ -745,9 +743,7 @@ Section SigEqType.
 
 Variables (T : eqType) (P : pred T).
 
-(* FIXME: “sig_subType P” should be inferred. *)
-Definition sig_eqMixin := Eval hnf in (SubEqMixin (sig_subType P) : Equality.class_of {x | P x}).
-Fail Definition original_sig_eqMixin := Eval hnf in [eqMixin of {x | P x} by <:].
+Definition sig_eqMixin := Eval hnf in [eqMixin of {x | P x} by <:].
 Canonical sig_eqType := Eval hnf in EqType {x | P x} sig_eqMixin.
 
 End SigEqType.

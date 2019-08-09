@@ -10,6 +10,7 @@ choice.v
 congr.v
 datatypes.v
 decimal.v
+eqtype_aux.v
 eqtype.v
 equality.v
 functions.v
