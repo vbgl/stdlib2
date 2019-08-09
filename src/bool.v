@@ -1390,6 +1390,7 @@ Implicit Types (x : T) (p : pred T) (sp : simpl_pred T) (pp : pT).
  unification (probably due to conversion cache cross-talk).                  **)
 Structure manifest_applicative_pred p := ManifestApplicativePred {
   manifest_applicative_pred_value :> pred T;
+  #[canonical(false)]
   _manifest_applicative_pred_2 : manifest_applicative_pred_value = p
 }.
 Definition ApplicativePred p := ManifestApplicativePred (eq_refl p).
@@ -1398,12 +1399,14 @@ Canonical applicative_pred_applicative sp :=
 
 Structure manifest_simpl_pred p := ManifestSimplPred {
   manifest_simpl_pred_value :> simpl_pred T;
+  #[canonical(false)]
   _manifest_simpl_pred_2 : manifest_simpl_pred_value = SimplPred p
 }.
 Canonical expose_simpl_pred p := ManifestSimplPred (eq_refl (SimplPred p)).
 
 Structure manifest_mem_pred p := ManifestMemPred {
   manifest_mem_pred_value :> mem_pred T;
+  #[canonical(false)]
   _manifest_mem_pred_2 : manifest_mem_pred_value= Mem [eta p]
 }.
 Canonical expose_mem_pred p :=  @ManifestMemPred p _ eq_refl.

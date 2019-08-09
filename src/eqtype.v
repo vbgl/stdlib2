@@ -521,8 +521,10 @@ Structure subType : Type := SubType {
   sub_sort :> Type;
   val : sub_sort -> T;
   Sub : forall x, P x -> sub_sort;
+  #[canonical(false)]
   rec : forall K (_ : forall x Px, K (@Sub x Px)) u, K u;
-  SubK_ : forall x Px, val (@Sub x Px) = x
+  #[canonical(false)]
+  SubK : forall x Px, val (@Sub x Px) = x
 }.
 
 (* Generic proof that the second property holds by conversion.                *)
@@ -545,8 +547,6 @@ Variant Sub_spec : sT -> Type := SubSpec x Px : Sub_spec (Sub x Px).
 
 Lemma SubP u : Sub_spec u.
 Proof. by case: sT Sub_spec SubSpec u => /= U _ mkU rec _. Qed.
-
-Lemma SubK x Px : val (Sub x Px) = x. Proof. by case: sT. Qed.
 
 Definition insub x := if idP is ReflectT Px then Some (Sub x Px) else None.
 
