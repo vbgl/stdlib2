@@ -526,6 +526,7 @@ Variables (T : Type) (P : pred T).
 Structure subType : Type := SubType {
   sub_sort :> Type;
   val : sub_sort -> T;
+  #[canonical(false)]
   Sub : forall x, P x -> sub_sort;
   #[canonical(false)]
   rec : forall K (_ : forall x Px, K (@Sub x Px)) u, K u;

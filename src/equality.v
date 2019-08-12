@@ -83,7 +83,7 @@ Arguments eq_rect_r {A x} P _ {y} _.
 Arguments eq_rec_r {A x} P _ {y} _.
 Arguments eq_ind_r {A x} P _ {y} _.
 
-Lemma neq_sym A (x y : A) : x <> y -> y <> x.
+Lemma neq_sym {A} {x y : A} : x <> y -> y <> x.
 Proof. by move=> neq_xy /eq_sym. Qed.
 
 (* A predicate for singleton types.                                           *)

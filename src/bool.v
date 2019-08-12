@@ -1275,9 +1275,8 @@ Notation xpreim := (fun f (p : pred _) x => p (f x)).
 
 (** The packed class interface for pred-like types. **)
 
-#[universes(template)]
 Structure predType T :=
-   PredType {pred_sort :> Type; topred : pred_sort -> pred T}.
+   PredType {pred_sort :> Type; #[canonical(false)] topred : pred_sort -> pred T}.
 
 Definition clone_pred T U :=
   fun pT & @pred_sort T pT -> U =>

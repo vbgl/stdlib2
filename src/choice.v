@@ -52,10 +52,6 @@ Import base bool functions eqtype morenat.
 (* all basic datatypes (e.g., nat, bool, subTypes, pairs, sums, etc.).        *)
 (******************************************************************************)
 
-Set Implicit Arguments.
-Unset Strict Implicit.
-Unset Printing Implicit Defensive.
-
 (* Technical definitions about coding and decoding of nat sequences, which    *)
 (* are used below to define various Canonical instances of the choice and     *)
 (* countable interfaces.                                                      *)
