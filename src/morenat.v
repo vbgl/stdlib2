@@ -438,10 +438,10 @@ Lemma maxnACA : interchange maxn maxn.
 Proof. by move=> m n p q; rewrite -!maxnA (maxnCA n). Qed.
 
 Lemma maxn_idPl {m n} : reflect (maxn m n = m) (m >= n).
-Proof. (* by rewrite -subn_eq0 -(eqn_add2l m) addn0 -maxnE; apply: eqP. Qed. *) Admitted.
+Proof. by rewrite -subn_eq0 -(eqn_add2l m) addn0 -maxnE; apply: eqP. Qed.
 
 Lemma maxn_idPr {m n} : reflect (maxn m n = n) (m <= n).
-Proof. (* by rewrite maxnC; apply: maxn_idPl. Qed. *) Admitted.
+Proof. by rewrite maxnC; apply: maxn_idPl. Qed.
 
 Lemma maxnn : idempotent maxn.
 Proof. by move=> n; apply/maxn_idPl. Qed.
@@ -497,13 +497,13 @@ Lemma minnACA : interchange minn minn.
 Proof. by move=> m n p q; rewrite -!minnA (minnCA n). Qed.
 
 Lemma minn_idPl {m n} : reflect (minn m n = m) (m <= n).
-Proof. (*
+Proof.
 rewrite (sameP maxn_idPr eqP) -(eqn_add2l m) eq_sym -addn_min_max eqn_add2r.
 exact: eqP.
-Qed. *) Admitted.
+Qed.
 
 Lemma minn_idPr {m n} : reflect (minn m n = n) (m >= n).
-Proof. (* by rewrite minnC; apply: minn_idPl. Qed. *) Admitted.
+Proof. by rewrite minnC; apply: minn_idPl. Qed.
 
 Lemma minnn : idempotent minn.
 Proof. by move=> n; apply/minn_idPl. Qed.
@@ -548,13 +548,13 @@ Proof. exact/maxn_idPl/geq_minr. Qed.
 
 (* Distributivity. *)
 Lemma maxn_minl : left_distributive maxn minn.
-Proof. (*
+Proof.
 move=> m1 m2 n; wlog le_m21: m1 m2 / m2 <= m1.
   move=> IH; case/orP: (leq_total m2 m1) => /IH //.
   by rewrite minnC [in R in _ = R]minnC.
-rewrite (minn_idPr le_m21); apply/esym/minn_idPr.
+rewrite (minn_idPr le_m21); apply/equality.eq_sym/minn_idPr.
 by rewrite geq_max leq_maxr leq_max le_m21.
-Qed. *) Admitted.
+Qed.
 
 Lemma maxn_minr : right_distributive maxn minn.
 Proof. by move=> m n1 n2; rewrite !(maxnC m) maxn_minl. Qed.
@@ -665,6 +665,9 @@ Proof. by elim: n => //= n ->. Qed.
 Lemma eq_iter f f' : f =1 f' -> forall n, iter n f =1 iter n f'.
 Proof. by move=> eq_f n x; elim: n => //= n ->; rewrite eq_f. Qed.
 
+Lemma iter_fix n f x : f x = x -> iter n f x = x.
+Proof. by move=> fixf; elim: n => //= n ->. Qed.
+
 Lemma eq_iteri f f' : f =2 f' -> forall n, iteri n f =1 iteri n f'.
 Proof. by move=> eq_f n x; elim: n => //= n ->; rewrite eq_f. Qed.
 
@@ -674,7 +677,7 @@ Proof. by move=> eq_op x; apply: eq_iteri; case. Qed.
 End Iteration.
 
 Lemma iter_succn m n : iter n succn m = m + n.
-Proof. by elim: n => /= [ | n -> ]; [ rewrite addn0 | rewrite addnS ]. Qed.
+Proof. by rewrite addnC; elim: n => //= n ->. Qed.
 
 Lemma iter_succn_0 n : iter n succn 0 = n.
 Proof. exact: iter_succn. Qed.
@@ -1235,7 +1238,7 @@ Qed.
 Section Monotonicity.
 Variable T : Type.
 
-Lemma homo_ltn_in (D : pred nat) (f : nat -> T) (r : T -> T -> Prop) :
+Lemma homo_ltn_in (D : {pred nat}) (f : nat -> T) (r : T -> T -> Prop) :
   (forall y x z, r x y -> r y z -> r x z) ->
   {in D &, forall i j k, i < k < j -> k \in D} ->
   {in D, forall i, i.+1 \in D -> r (f i) (f i.+1)} ->
@@ -1253,7 +1256,7 @@ Lemma homo_ltn (f : nat -> T) (r : T -> T -> Prop) :
   (forall i, r (f i) (f i.+1)) -> {homo f : i j / i < j >-> r i j}.
 Proof. by move=> /(@homo_ltn_in predT f) fr fS i j; apply: fr. Qed.
 
-Lemma homo_leq_in (D : pred nat) (f : nat -> T) (r : T -> T -> Prop) :
+Lemma homo_leq_in (D : {pred nat}) (f : nat -> T) (r : T -> T -> Prop) :
   (forall x, r x x) -> (forall y x z, r x y -> r y z -> r x z) ->
   {in D &, forall i j k, i < k < j -> k \in D} ->
   {in D, forall i, i.+1 \in D -> r (f i) (f i.+1)} ->
@@ -1317,7 +1320,7 @@ Proof. exact: total_homo_mono. Qed.
 Lemma leq_nmono : {homo f : m n /~ m < n} -> {mono f : m n /~ m <= n}.
 Proof. exact: total_homo_mono. Qed.
 
-Variable (D D' : pred nat).
+Variables (D D' : {pred nat}).
 
 Lemma ltnW_homo_in : {in D & D', {homo f : m n / m < n}} ->
   {in D & D', {homo f : m n / m <= n}}.
@@ -1491,24 +1494,27 @@ case=> //=; elim=> //= p; case: (nat_of_pos p) => //= n [<-].
 by rewrite natTrecE addnS /= addnS {2}addnn; elim: {1 3}n.
 Qed.
 
-Lemma nat_of_succ_gt0 p : Pos.succ p = p.+1 :> nat.
+Lemma nat_of_succ_pos p : Pos.succ p = p.+1 :> nat.
 Proof. by elim: p => //= p ->; rewrite !natTrecE. Qed.
 
-Lemma nat_of_addn_gt0 p q : (p + q)%positive = p + q :> nat.
+Lemma nat_of_add_pos p q : (p + q)%positive = p + q :> nat.
 Proof.
 apply: @fst _ (Pplus_carry p q = (p + q).+1 :> nat) _.
 elim: p q => [p IHp|p IHp|] [q|q|] //=; rewrite !natTrecE //;
-  by rewrite ?IHp ?nat_of_succ_gt0 ?(doubleS, doubleD, addn1, addnS).
+  by rewrite ?IHp ?nat_of_succ_pos ?(doubleS, doubleD, addn1, addnS).
+Qed.
+
+Lemma nat_of_mul_pos p q : (p * q)%positive = p * q :> nat.
+Proof.
+elim: p => [p IHp|p IHp|] /=; rewrite ?mul1n //;
+  by rewrite ?nat_of_add_pos /= !natTrecE IHp doubleMl.
 Qed.
 
 Lemma nat_of_add_bin b1 b2 : (b1 + b2)%num = b1 + b2 :> nat.
-Proof. by case: b1 b2 => [|p] [|q] //=; apply: nat_of_addn_gt0. Qed.
+Proof. by case: b1 b2 => [|p] [|q]; rewrite ?addn0 //= nat_of_add_pos. Qed.
 
 Lemma nat_of_mul_bin b1 b2 : (b1 * b2)%num = b1 * b2 :> nat.
-Proof.
-case: b1 b2 => [|p] [|q] //=; elim: p => [p IHp|p IHp|] /=;
-  by rewrite ?(mul1n, nat_of_addn_gt0, mulSn) //= !natTrecE IHp doubleMl.
-Qed.
+Proof. by case: b1 b2 => [|p] [|q]; rewrite ?muln0 //= nat_of_mul_pos. Qed.
 
 Lemma nat_of_exp_bin n (b : N) : n ^ b = pow_N 1 muln n b.
 Proof.
