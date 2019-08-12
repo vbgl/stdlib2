@@ -58,7 +58,7 @@ Import functions.
 (* Equality on an eqType is proof-irrelevant (lemma eq_irrelevance).          *)
 (*   The eqType interface is implemented for most standard datatypes:         *)
 (*  bool, unit, void, option, prod (denoted A * B), sum (denoted A + B),      *)
-(*  sig (denoted {x | P}). We also define         *)
+(*  sig (denoted {x | P}), sigT (denoted {i : I & T}). We also define         *)
 (*   tagged_as u v == v cast as T_(tag u) if tag v == tag u, else u.          *)
 (*  -> We have u == v <=> (tag u == tag v) && (tagged u == tagged_as u v).    *)
 (* The subType interface supports the following operations:                   *)
@@ -192,6 +192,15 @@ Proof. exact/eqP/eqP. Qed.
 
 Hint Resolve eq_refl eq_sym : core.
 
+Variant eq_xor_neq (T : eqType) (x y : T) : bool -> bool -> Set :=
+  | EqNotNeq of x = y : eq_xor_neq x y true true
+  | NeqNotEq of x != y : eq_xor_neq x y false false.
+
+Lemma eqVneq (T : eqType) (x y : T) : eq_xor_neq x y (y == x) (x == y).
+Proof. by rewrite eq_sym; case: (altP eqP); constructor. Qed.
+
+Arguments eqVneq {T} x y, {T x y}.
+
 Section Contrapositives.
 
 Variables (T1 T2 : eqType).
@@ -309,7 +318,7 @@ Lemma eqbE : eqb = eq_op. Proof. by []. Qed.
 Lemma bool_irrelevance (b : bool) (p1 p2 : b) : p1 = p2.
 Proof. exact: eq_irrelevance. Qed.
 
-Lemma negb_add (b1 b2: bool_eqType) : ~~ (b1 (+) b2) = (b1 == b2).
+Lemma negb_add b1 b2 : ~~ (b1 (+) b2) = (b1 == b2).
 Proof. by rewrite -addNb. Qed.
 
 Lemma negb_eqb b1 b2 : (b1 != b2) = b1 (+) b2.
@@ -365,9 +374,6 @@ Proof. by move->; rewrite eqxx. Qed.
 
 Lemma predU1r : b -> (x == y) || b.
 Proof. by move->; rewrite orbT. Qed.
-
-Lemma eqVneq : (x = y) + (x != y).
-Proof. by case: eqP; [left | right]. Qed.
 
 End EqPred.
 
@@ -670,7 +676,7 @@ Proof. by move=> u; apply: val_inj; apply: SubK. Qed.
 Prenex Implicits svalP s2val s2valP s2valP'.
 
 Canonical sig_subType T (P : pred T) : subType [eta P] :=
-    Eval hnf in [subType for @sval T [eta [eta P]]].
+  Eval hnf in [subType for @sval T [eta [eta P]]].
 
 (* Shorthand for sigma types over collective predicates. *)
 Notation "{ x 'in' A }" := {x | x \in A}
