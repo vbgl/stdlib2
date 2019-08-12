@@ -17,25 +17,6 @@ Require Import lock.
 Import prelude ssreflect prop equality datatypes nat.
 
 (********************************************************************)
-(** * The boolean datatype *)
-
-(** [bool] is the datatype of the boolean values [true] and [false] *)
-
-Variant bool :=
-| true : bool
-| false : bool.
-
-Add Printing If bool.
-
-Declare Scope bool_scope.
-Delimit Scope bool_scope with bool.
-Bind Scope bool_scope with bool.
-
-Register bool as core.bool.type.
-Register true as core.bool.true.
-Register false as core.bool.false.
-
-
 (** Basic boolean operators *)
 
 Definition andb (b1 b2:bool) : bool := if b1 then b2 else false.

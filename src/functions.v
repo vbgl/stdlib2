@@ -13,6 +13,7 @@
 (** #<style> .doc { font-family: monospace; white-space: pre; } </style># **)
 
 Require Import prelude ssreflect prop datatypes equality congr.
+Require Export nonPropType.
 
 
 (**
@@ -595,10 +596,8 @@ Proof. by move=> fK <-. Qed.
 
 End Injections.
 
-Lemma Some_inj {T} : injective (@Some T). Proof. by move => x y /optionI. Qed.
-
-(**  Force implicits to use as a view.  **)
-Prenex Implicits Some_inj.
+Lemma Some_inj {T : nonPropType} : injective (@Some T).
+Proof. by move => x y /optionI. Qed.
 
 (**  cancellation lemmas for dependent type casts. **)
 Lemma eq_symK T x y : cancel (@eq_sym T x y) (@eq_sym T y x).

@@ -2297,7 +2297,7 @@ Qed.
 
 Lemma perm_pmap s t : perm_eq s t -> perm_eq (pmap f s) (pmap f t).
 Proof.
-move=> eq_st; apply/(perm_map_inj (@Some_inj _)); rewrite !pmapS_filter.
+move=> eq_st; apply/(perm_map_inj Some_inj); rewrite !pmapS_filter.
 exact/perm_map/perm_filter.
 Qed.
 

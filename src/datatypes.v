@@ -215,3 +215,37 @@ Lemma sumI (A B: Type) (x x': A + B) (e: x = x') :
   | Right b => if x' is Right b' then b = b' else False
   end.
 Proof. by move: e => -> {x}; case: x'. Qed.
+
+(** * The boolean datatype *)
+
+(** [bool] is the datatype of the boolean values [true] and [false] *)
+
+Variant bool :=
+| true : bool
+| false : bool.
+
+Add Printing If bool.
+
+Declare Scope bool_scope.
+Delimit Scope bool_scope with bool.
+Bind Scope bool_scope with bool.
+
+Register bool as core.bool.type.
+Register true as core.bool.true.
+Register false as core.bool.false.
+
+(**  Force boolean interpretation of simple if expressions.  **)
+
+Declare Scope boolean_if_scope.
+Delimit Scope boolean_if_scope with BOOL_IF.
+
+Notation "'if' c 'return' R 'then' vT 'else' vF" :=
+  (if c is true as c in bool return R then vT else vF) : boolean_if_scope.
+
+Notation "'if' c 'then' vT 'else' vF" :=
+  (if c%bool is true as _ in bool return _ then vT else vF) : boolean_if_scope.
+
+Notation "'if' c 'as' x 'return' R 'then' vT 'else' vF" :=
+  (if c%bool is true as x in bool return R then vT else vF) : boolean_if_scope.
+
+Open Scope boolean_if_scope.

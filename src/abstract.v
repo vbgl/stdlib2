@@ -10,15 +10,17 @@
 
 Require Import prelude ssreflect datatypes equality nat.
 
-(* Constants for abstract: and [: name ] intro pattern *)
+(**  Constants for abstract: and #[#: name #]# intro pattern  **)
 Definition abstract_lock := unit.
 Definition abstract_key := tt.
 
 Definition abstract (statement : Type) (id : nat) (lock : abstract_lock) :=
   let: tt := lock in statement.
 
-Notation "<hidden n >" := (abstract _ n _).
-Notation "T (* n *)" := (abstract T n abstract_key).
+Declare Scope ssr_scope.
+Notation "<hidden n >" := (abstract _ n _) : ssr_scope.
+Notation "T (* n *)" := (abstract T n abstract_key) : ssr_scope.
+Open Scope ssr_scope.
 
 Register abstract_lock as plugins.ssreflect.abstract_lock.
 Register abstract_key as plugins.ssreflect.abstract_key.

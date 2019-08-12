@@ -26,6 +26,11 @@ Import prelude.
         argumentType c == the T such that c : forall x : T, P x.
           returnType c == the R such that c : T -> R.
      {type of c for s} == P s where c : forall x : T, P x.
+           nonPropType == an interface for non-Prop Types: a nonPropType coerces
+                          to a Type, and only types that do _not_ have sort
+                          Prop are canonical nonPropType instances. This is
+                          useful for applied views (see mid-file comment).
+             notProp T == the nonPropType instance for type T.
            phantom T v == singleton type with inhabitant Phantom T v.
                phant T == singleton type with inhabitant Phant v.
                  =^~ r == the converse of rewriting rule r (e.g., in a
@@ -69,18 +74,70 @@ Reserved Notation "(* 69 *)" (at level 69).
 (**  Non ambiguous keyword to check if the SsrSyntax module is imported  **)
 Reserved Notation "(* Use to test if 'SsrSyntax_is_Imported' *)" (at level 8).
 
-Reserved Notation "<hidden n >" (at level 200).
+Reserved Notation "<hidden n >" (at level 0, n at level 0,
+  format "<hidden  n >").
 Reserved Notation "T (* n *)" (at level 200, format "T  (* n *)").
 
 End SsrSyntax.
 
 Export SsrSyntax.
 
+(** Save primitive notation that will be overloaded. **)
+Local Notation CoqGenericIf c vT vF := (if c then vT else vF) (only parsing).
+Local Notation CoqGenericDependentIf c x R vT vF :=
+  (if c as x return R then vT else vF) (only parsing).
+Local Notation CoqCast x T := (x : T) (only parsing).
+
+(** Reserve notation that introduced in this file. **)
+Reserved Notation "'if' c 'then' vT 'else' vF" (at level 200,
+  c, vT, vF at level 200, only parsing).
+Reserved Notation "'if' c 'return' R 'then' vT 'else' vF" (at level 200,
+  c, R, vT, vF at level 200, only parsing).
+Reserved Notation "'if' c 'as' x 'return' R 'then' vT 'else' vF" (at level 200,
+  c, R, vT, vF at level 200, x ident, only parsing).
+
+Reserved Notation "x : T" (at level 100, right associativity,
+  format "'[hv' x '/ '  :  T ']'").
+Reserved Notation "T : 'Type'" (at level 100, format "T  :  'Type'").
+Reserved Notation "P : 'Prop'" (at level 100, format "P  :  'Prop'").
+
+Reserved Notation "[ 'the' sT 'of' v 'by' f ]" (at level 0,
+  format "[ 'the'  sT  'of'  v  'by'  f ]").
+Reserved Notation "[ 'the' sT 'of' v ]" (at level 0,
+  format "[ 'the'  sT  'of'  v ]").
+Reserved Notation "{ 'type' 'of' c 'for' s }" (at level 0,
+  format "{ 'type'  'of'  c  'for'  s }").
+
+Reserved Notation "=^~ r" (at level 100, format "=^~  r").
+
+Reserved Notation "[ 'unlockable' 'of' C ]" (at level 0,
+  format "[ 'unlockable'  'of'  C ]").
+Reserved Notation "[ 'unlockable' 'fun' C ]" (at level 0,
+  format "[ 'unlockable'  'fun'  C ]").
+
 (**
  To define notations for tactic in intro patterns.
  When "=> /t" is parsed, "t:%ssripat" is actually interpreted. **)
 Declare Scope ssripat_scope.
 Delimit Scope ssripat_scope with ssripat.
+
+(**
+ Make the general "if" into a notation, so that we can override it below.
+ The notations are "only parsing" because the Coq decompiler will not
+ recognize the expansion of the boolean if; using the default printer
+ avoids a spurious trailing %%GEN_IF. **)
+
+Declare Scope general_if_scope.
+Delimit Scope general_if_scope with GEN_IF.
+
+Notation "'if' c 'then' vT 'else' vF" :=
+  (CoqGenericIf c vT vF) (only parsing) : general_if_scope.
+
+Notation "'if' c 'return' R 'then' vT 'else' vF" :=
+  (CoqGenericDependentIf c c R vT vF) (only parsing) : general_if_scope.
+
+Notation "'if' c 'as' x 'return' R 'then' vT 'else' vF" :=
+  (CoqGenericDependentIf c x R vT vF) (only parsing) : general_if_scope.
 
 (**
  To allow a wider variety of notations without reserving a large number of
@@ -102,19 +159,16 @@ Open Scope form_scope.
  precedence of the notation, which binds less tightly than application),
  and put printing boxes that print the type of a long definition on a
  separate line rather than force-fit it at the right margin.                 **)
-Notation "x : T" := (x : T)
-  (at level 100, right associativity,
-   format "'[hv' x '/ '  :  T ']'") : core_scope.
+Notation "x : T" := (CoqCast x T) : core_scope.
 
 (**
  Allow the casual use of notations like nat * nat for explicit Type
  declarations. Note that (nat * nat : Type) is NOT equivalent to
  (nat * nat)%%type, whose inferred type is legacy type "Set".                **)
-Notation "T : 'Type'" := (T%type : Type)
-  (at level 100, only parsing) : core_scope.
+Notation "T : 'Type'" := (CoqCast T%type Type) (only parsing) : core_scope.
 (**  Allow similarly Prop annotation for, e.g., rewrite multirules. **)
-Notation "P : 'Prop'" := (P%type : Prop)
-  (at level 100, only parsing) : core_scope.
+Notation "P : 'Prop'" := (CoqCast P%type Prop) (only parsing) : core_scope.
+
 
 (**
  Syntax for referring to canonical structures:
@@ -156,28 +210,27 @@ Local Arguments get_by _%type_scope _%type_scope _ _ _ _.
 
 Notation "[ 'the' sT 'of' v 'by' f ]" :=
   (@get_by _ sT f _ _ ((fun v' (s : sT) => Put v' (f s) s) v _))
-  (at level 0, only parsing) : form_scope.
+  (only parsing) : form_scope.
 
-Notation "[ 'the' sT 'of' v ]" := (get ((fun s : sT => Put v (*coerce*)s s) _))
-  (at level 0, only parsing) : form_scope.
+Notation "[ 'the' sT 'of' v ]" := (get ((fun s : sT => Put v (*coerce*) s s) _))
+  (only parsing) : form_scope.
 
 (**
- The following are "format only" versions of the above notations. Since Coq
- doesn't provide this facility, we fake it by splitting the "the" keyword.
+ The following are "format only" versions of the above notations.
  We need to do this to prevent the formatter from being be thrown off by
  application collapsing, coercion insertion and beta reduction in the right
  hand side of the notations above.                                           **)
 
-Notation "[ 'th' 'e' sT 'of' v 'by' f ]" := (@get_by _ sT f v _ _)
-  (at level 0,  format "[ 'th' 'e'  sT  'of'  v  'by'  f ]") : form_scope.
+Notation "[ 'the' sT 'of' v 'by' f ]" := (@get_by _ sT f v _ _)
+  (only printing) : form_scope.
 
-Notation "[ 'th' 'e' sT 'of' v ]" := (@get _ sT v _ _)
-  (at level 0, format "[ 'th' 'e'  sT  'of'  v ]") : form_scope.
+Notation "[ 'the' sT 'of' v ]" := (@get _ sT v _ _)
+  (only printing) : form_scope.
 
 (**
  We would like to recognize
-Notation " #[# 'th' 'e' sT 'of' v : 'Type' #]#" := (@get Type sT v _ _)
-  (at level 0, format " #[# 'th' 'e'  sT   'of'  v  :  'Type' #]#") : form_scope.
+Notation " #[# 'the' sT 'of' v : 'Type' #]#" := (@get Type sT v _ _)
+  (at level 0, format " #[# 'the'  sT   'of'  v  :  'Type' #]#") : form_scope.
  **)
 
 (**
@@ -212,8 +265,7 @@ Definition argumentType T P & forall x : T, P x := T.
 Definition dependentReturnType T P & forall x : T, P x := P.
 Definition returnType aT rT & aT -> rT := rT.
 
-Notation "{ 'type' 'of' c 'for' s }" := (dependentReturnType c s)
-  (at level 0, format "{ 'type'  'of'  c  'for'  s }") : type_scope.
+Notation "{ 'type' 'of' c 'for' s }" := (dependentReturnType c s) : type_scope.
 
 (**
  A generic "phantom" type (actually, a unit type with a phantom parameter).
@@ -250,10 +302,10 @@ Register protect_term as plugins.ssreflect.protect_term.
 
 (**
  The ssreflect idiom for a non-keyed pattern:
-  - unkeyed t wiil match any subterm that unifies with t, regardless of
+  - unkeyed t will match any subterm that unifies with t, regardless of
     whether it displays the same head symbol as t.
   - unkeyed t a b will match any application of a term f unifying with t,
-    to two arguments unifying with with a and b, repectively, regardless of
+    to two arguments unifying with with a and b, respectively, regardless of
     apparent head symbols.
   - unkeyed x where x is a variable will match any subterm with the same
     type as x (when x would raise the 'indeterminate pattern' error).        **)
@@ -279,7 +331,7 @@ Notation unkeyed x := (let flex := x in flex).
   locked_with k t is equal but not convertible to t, much like locked t,
     but supports explicit tagging with a value k : unit. This is used to
     mitigate a flaw in the term comparison heuristic of the Coq kernel,
-    which treats all terms of the form locked t as equal and conpares their
+    which treats all terms of the form locked t as equal and compares their
     arguments recursively, leading to an exponential blowup of comparison.
     For this reason locked_with should be used rather than locked when
     defining ADT operations. The unlock tactic does not support locked_with
