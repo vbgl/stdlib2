@@ -530,7 +530,7 @@ Local Coercion base : class_of >-> Choice.class_of.
 Structure type : Type := Pack {sort : Type; #[canonical(false)] class : class_of sort}.
 Local Coercion sort : type >-> Sortclass.
 Variables (T : Type) (cT : type).
-Definition clone c of phant_id class c := @Pack T c.
+Definition clone c of phant_id (class cT) c := @Pack T c.
 Let xT := let: @Pack T _ := cT in T.
 Notation xclass := (class _ : class_of xT).
 
@@ -624,7 +624,7 @@ Variables (T : choiceType) (P : pred T).
 Import Countable.
 
 Structure subCountType : Type :=
-  SubCountType {subCount_sort :> subType P; _subCountType_1 : mixin_of subCount_sort}.
+  SubCountType {subCount_sort :> subType P; #[canonical(false)] _subCountType_1 : mixin_of subCount_sort}.
 
 Coercion sub_countType (sT : subCountType) :=
   Eval hnf in pack (let: SubCountType m := sT return mixin_of sT in m) id.
@@ -672,7 +672,7 @@ Canonical nat_countType := Eval hnf in CountType nat nat_countMixin.
 
 Definition bool_countMixin := CanCountMixin oddb.
 Canonical bool_countType := Eval hnf in CountType bool bool_countMixin.
-(* FIXME: Canonical bitseq_countType :=  Eval hnf in [countType of bitseq]. *)
+Canonical bitseq_countType :=  Eval hnf in [countType of bitseq].
 
 Definition unit_countMixin := CanCountMixin bool_of_unitK.
 Canonical unit_countType := Eval hnf in CountType unit unit_countMixin.
