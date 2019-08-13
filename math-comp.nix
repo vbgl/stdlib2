@@ -6,7 +6,7 @@ stdenv.mkDerivation {
 
   buildInputs = [ coq stdlib2 ];
 
-  buildFlags = "ssreflect/div.vo ssreflect/fingraph.vo";
+  buildFlags = "ssreflect/all_ssreflect.vo";
 
   installFlags = [
     "-f Makefile.coq"
