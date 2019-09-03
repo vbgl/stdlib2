@@ -13,6 +13,7 @@ decimal.v
 eqtype_aux.v
 eqtype.v
 equality.v
+fintype.v
 functions.v
 lock.v
 morenat.v
