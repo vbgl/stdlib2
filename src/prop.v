@@ -97,7 +97,7 @@ Hint View for move/ iffLRn|2 iffRLn|2 iffLR|2 iffRL|2.
 Hint View for apply/ iffRLn|2 iffLRn|2 iffRL|2 iffLR|2.
 
 (** Existential quantification *)
-Variant ex A (P: A -> Type) : Prop :=
+Variant ex A (P: A -> Prop) : Prop :=
 | Ex a of P a.
 
 Notation "'exists' x .. y , p" := (ex (fun x => .. (ex (fun y => p)) ..))
@@ -107,8 +107,12 @@ Notation "'exists' x .. y , p" := (ex (fun x => .. (ex (fun y => p)) ..))
 
 Register ex as core.ex.type.
 
-Variant ex2 A (P Q: A -> Type) : Prop :=
+Variant ex2 A (P Q: A -> Prop) : Prop :=
 | Ex2 a of P a & Q a.
 
 Notation "'exists2' x , p & q" := (ex2 (fun x => p) (fun x => q))
   (at level 200, x ident, p at level 200, right associativity) : type_scope.
+Notation "'exists2' x : A , p & q" := (@ex2 A (fun x => p) (fun x => q))
+  (at level 200, x ident, A at level 200, p at level 200, right associativity,
+    format "'[' 'exists2'  '/  ' x  :  A ,  '/  ' '[' p  &  '/' q ']' ']'")
+  : type_scope.

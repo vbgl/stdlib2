@@ -603,7 +603,7 @@ Proof. by move => x y /optionI. Qed.
 Lemma eq_symK T x y : cancel (@eq_sym T x y) (@eq_sym T y x).
 Proof. by case: y /. Qed.
 
-Lemma eq_trans_id T x y (eqxy : x = y :> T) : eq_trans (eq_refl x) eqxy = eqxy.
+Lemma eq_trans_id T x y (eqxy : x = y :> T) : eq_trans eqxy (eq_refl y) = eqxy.
 Proof. by case: y / eqxy. Qed.
 
 Section InjectionsTheory.

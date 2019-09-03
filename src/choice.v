@@ -265,8 +265,8 @@ Structure type := Pack {sort; #[canonical(false)] class : class_of sort}.
 Local Coercion sort : type >-> Sortclass.
 Variables (T : Type) (cT : type).
 Definition clone c of phant_id (class cT) c := @Pack T c.
-Let xT := let: Pack _ := cT in T.
-Notation xclass := (class _ : class_of cT).
+Let xT := let: @Pack T _ := cT in T.
+Notation xclass := (class _ : class_of xT).
 
 Definition pack m :=
   fun b bT & phant_id (Equality.class bT) b => Pack (@Class T b m).

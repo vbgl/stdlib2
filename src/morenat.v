@@ -4,6 +4,9 @@ Export nat.
 Open Scope nat_scope.
 Declare Scope nat_rec_scope.
 
+Lemma succnK : cancel succn predn. Proof. by []. Qed.
+Lemma succn_inj : injective succn. Proof. by move => m n /natI. Qed.
+
 (* Predeclare postfix doubling/halving operators. *)
 
 Reserved Notation "n .*2" (at level 2, format "n .*2").
@@ -1591,7 +1594,7 @@ Add Ring nat_ring_ssr : nat_semi_ring (morphism nat_semi_morph,
 
 
 Ltac nat_norm :=
-  rewrite ?add0n ?addn0 -?addnA ?(addSn, addnS, add0n, addn0).
+  (*succn_to_add;*) rewrite ?add0n ?addn0 -?addnA ?(addSn, addnS, add0n, addn0).
 
 Ltac nat_congr := first
  [ apply: (eq_congr1 succn _)

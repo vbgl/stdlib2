@@ -323,43 +323,6 @@ Register negb as core.bool.negb.
 
 Set Warnings "-projection-no-head-constant".
 
-(* Make the general "if" into a notation, so that we can override it below.   *)
-(* The notations are "only parsing" because the Coq decompiler will not       *)
-(* recognize the expansion of the boolean if; using the default printer       *)
-(* avoids a spurrious trailing %GEN_IF.                                       *)
-
-Declare Scope general_if_scope.
-Delimit Scope general_if_scope with GEN_IF.
-
-Notation "'if' c 'then' v1 'else' v2" :=
-  (if c then v1 else v2)
-  (at level 200, c, v1, v2 at level 200, only parsing) : general_if_scope.
-
-Notation "'if' c 'return' t 'then' v1 'else' v2" :=
-  (if c return t then v1 else v2)
-  (at level 200, c, t, v1, v2 at level 200, only parsing) : general_if_scope.
-
-Notation "'if' c 'as' x 'return' t 'then' v1 'else' v2" :=
-  (if c as x return t then v1 else v2)
-  (at level 200, c, t, v1, v2 at level 200, x ident, only parsing)
-     : general_if_scope.
-
-(* Force boolean interpretation of simple if expressions.                     *)
-
-Declare Scope boolean_if_scope.
-Delimit Scope boolean_if_scope with BOOL_IF.
-
-Notation "'if' c 'return' t 'then' v1 'else' v2" :=
-  (if c%bool is true in bool return t then v1 else v2) : boolean_if_scope.
-
-Notation "'if' c 'then' v1 'else' v2" :=
-  (if c%bool is true in bool return _ then v1 else v2) : boolean_if_scope.
-
-Notation "'if' c 'as' x 'return' t 'then' v1 'else' v2" :=
-  (if c%bool is true as x in bool return t then v1 else v2) : boolean_if_scope.
-
-Open Scope boolean_if_scope.
-
 (*****************************************)
 (** * Reflect: a specialized inductive type for
     relating propositions and booleans,
