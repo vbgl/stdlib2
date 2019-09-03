@@ -25,4 +25,5 @@ prop.v
 seq.v
 ssreflect.v
 matching.v
+tauto.v
 under.v
