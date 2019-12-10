@@ -1440,7 +1440,7 @@ End NatTrec.
 
 Notation natTrecE := NatTrec.trecE.
 
-(* FIXME
+(** Conversion with binary numbers
 Lemma eq_binP : Equality.axiom N.eqb.
 Proof.
 move=> p q; apply: (iffP idP) => [|<-]; last by case: p => //; elim.
@@ -1586,7 +1586,6 @@ Ltac succn_to_add :=
 Add Ring nat_ring_ssr : nat_semi_ring (morphism nat_semi_morph,
    constants [nat_litteral], preprocess [succn_to_add],
    power_tac nat_power_theory [nat_litteral]).
-
 *)
 
 (* A congruence tactic, similar to the boolean one, along with an .+1/+  *)

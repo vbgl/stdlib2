@@ -10,7 +10,7 @@ pkgs ? import (fetchTarball {
 
 let coq = import (fetchTarball {
     url = https://github.com/vbgl/coq/archive/ltac2+noinit.tar.gz;
-    sha256 = "09dybarsj56d3sqi1hjjnqb5gik2491am6qzchcwjar2jy37crq3";
+    sha256 = "02zyvkgcm3c8sav077vzs37pmyapaz0zqgyn932x0p6scjxxrapz";
   }
 ) {};
 in

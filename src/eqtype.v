@@ -116,7 +116,7 @@ Module Equality.
 
 Definition axiom T (e : rel T) := forall x y, reflect (x = y) (e x y).
 
-Structure mixin_of T := Mixin {op : rel T; eqP : axiom op}.
+Structure mixin_of T := Mixin {op : rel T; #[canonical(false)] eqP : axiom op}.
 Notation class_of := mixin_of (only parsing).
 
 Section ClassDef.
@@ -526,7 +526,7 @@ Variables (T : Type) (P : pred T).
 Structure subType : Type := SubType {
   sub_sort :> Type;
   val : sub_sort -> T;
-  #[canonical(false)]
+  (*#[canonical(false)]*)
   Sub : forall x, P x -> sub_sort;
   #[canonical(false)]
   rec : forall K (_ : forall x Px, K (@Sub x Px)) u, K u;
